@@ -19,6 +19,7 @@ def register():
     form = Registeration()
     if form.validate_on_submit():
         return redirect(url_for('home'))
+    
     return render_template('register.html', title='Register', form = form)
 
 ###login
