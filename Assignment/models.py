@@ -1,6 +1,7 @@
 ##database
 from Assignment import db
 
+
 ##User table
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
