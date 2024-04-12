@@ -2,6 +2,7 @@ from flask import render_template, url_for, flash, redirect
 from Assignment import app, db, bcrypt
 from Assignment.forms import Registeration, Login
 from Assignment.models import User, Message
+from flask_login import login_user
 
 
 ###homepage
@@ -19,7 +20,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to login', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
     else:
         for field, errors in form.errors.items():
             for error in errors:
@@ -31,9 +32,11 @@ def register():
 def login():
     form = Login()
     if form.validate_on_submit():
-        user = User.query.filter_by(user=form.username.data).first()
+        user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user)
             return redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check username and password','danger')
+            
     return render_template('login.html', title='Login', form = form)
