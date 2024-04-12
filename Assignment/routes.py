@@ -7,7 +7,7 @@ from Assignment.models import User, Message
 ###homepage
 @app.route("/")
 def home():
-    return "Hello world"
+    return render_template('home.html', title='homepage')
 
 ###register
 @app.route("/register", methods=['GET', 'POST'])
