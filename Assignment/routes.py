@@ -9,7 +9,6 @@ from Assignment.models import User, Message
 def home():
     return render_template('home.html', title='homepage')
 
-###register
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = Registeration()
@@ -21,7 +20,11 @@ def register():
         db.session.commit()
         flash('Your account has been created! You are now able to login', 'success')
         return redirect(url_for('home'))
-    return render_template('register.html', title='Register', form = form)
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'Error in {getattr(form, field).label.text}: {error}', 'danger')
+    return render_template('register.html', title='Register', form=form)
 
 ###login
 @app.route("/login", methods=['GET', 'POST'])
