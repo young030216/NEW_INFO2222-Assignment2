@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<form method="post">
+    <h3>Chat with User</h3>
+    <div class="chat">
+        <input type="text", placeholder="Room code" name="code" value="{{code}}" />
+        <button type="submit" name="join">Join a Room</button>
+        <button type="submit" name="create">Create a Room</button>
+    </div>
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if current_user_name %}
+    <p>Logged in as: {{ current_user_name }}</p>
+    {% endif %}
+</form>
+{% endblock %}
