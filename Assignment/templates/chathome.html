@@ -3,15 +3,71 @@
 <form method="post">
     <h3>Chat with User</h3>
     <div class="chat">
-        <input type="text", placeholder="Room code" name="code" value="{{code}}" />
+        <input type="text" placeholder="Room code" name="code" value="{{code}}" />
         <button type="submit" name="join">Join a Room</button>
         <button type="submit" name="create">Create a Room</button>
     </div>
-    {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
+    {% if chat_error %}
+    <div class="alert alert-danger">{{ chat_error }}</div>
     {% endif %}
     {% if current_user_name %}
     <p>Logged in as: {{ current_user_name }}</p>
     {% endif %}
 </form>
+
+<div class="friend">
+    <input type="text" placeholder="Friend username" id="friend_username" value="{{friend}}" />
+    <button type="button" name="request" id="send_request" onClick="sendRequest()">Send add request</button> 
+</div>
+
+<div class="friend-list">
+    <h3>Friend List</h3>
+    <ul>
+        {% for friend in friends %}
+            <li>{{ friend.username }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="friend-requests">
+    <h3>Friend Requests</h3>
+    <ul>
+        {% for request in friend_requests %}
+            <li>{{ request.sender.username }} sent you a friend request</li>
+            <form method="post">
+                <input type="hidden" name="request_id" value="{{ request.id }}">
+                <button type="submit" name="accept">Accept</button>
+                <button type="submit" name="reject">Reject</button>
+            </form>
+        {% endfor %}
+    </ul>
+</div>
+
+<script type="text/javascript">
+    if (typeof friend_requests !== 'undefined') {
+            console.log(friend_requests);
+    } else {
+        console.log('friend_requests is undefined');
+    }
+    var socketio = io()
+    const friendUsername = document.getElementById('friend_username').value;
+  
+    const sendRequest = () =>{
+        const friendUsername = document.getElementById('friend_username').value;
+        const current_user_name = "{{ current_user_name }}";
+        if (friendUsername == "") return;
+        socketio.emit('send_friend_request', {friendUsername: friendUsername, sender_name: current_user_name});
+    }
+    
+    socketio.on('friend_request_error', function(data) {
+        var error = data.error;
+        alert(error);
+    });
+
+    socketio.on('friend_request_notification', function(data) {
+        var receiver = data.receiver;
+        alert('You send a friend request to ' + receiver);
+    });
+</script>
+
 {% endblock %}
