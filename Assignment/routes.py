@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response
 from Assignment import app, db, bcrypt, socketio
 from Assignment.forms import Registeration, Login
-from Assignment.models import User, Message, Friend, FriendRequest
+from Assignment.models import User, Message, Friend, FriendRequest, Room
 from flask_login import login_user, current_user
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
@@ -31,28 +31,30 @@ def home():
 def chathome():
     current_user_name = request.cookies.get('username')
     current_user = User.query.filter_by(username=current_user_name).first()
-    current_user_id= current_user.id
+    current_user_id = current_user.id
     pending_requests = FriendRequest.query.filter_by(receiver_id=current_user_id, accepted=False).all()
+    rooms = Room.query.all()
 
     if request.method == "POST":
         code = request.form.get("code")
         join = request.form.get("join", False)
         create = request.form.get("create", False)
-        if  join!= False and not code:
-            return render_template('chathome.html', chat_error='Please enter a Room code.', current_user_name=current_user_name)
-                   
-        room = code
+        if join != False and not code:
+            return render_template('chathome.html', chat_error='Please enter a Room code.', current_user_name=current_user_name, rooms=rooms, friend_requests=pending_requests)
+
+        room = Room.query.filter_by(code=code).first()
         if create != False:
-            room = generate_unique_code(4)
-            rooms[room] = {"members":0, "message":[]}
-        elif code not in rooms:
-           return render_template('chathome.html', chat_error='Room dose not exist.', current_user_name=current_user_name)
-        
-        session["room"] = room
+            room = Room(code=generate_unique_code(4))
+            db.session.add(room)
+            db.session.commit()
+        elif not room:
+            return render_template('chathome.html', chat_error='Room does not exist.', current_user_name=current_user_name, rooms=rooms, friend_requests=pending_requests)
+
+        session["room"] = room.code
         session["name"] = current_user_name
         return redirect(url_for("room"))
-    
-    return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests)
+
+    return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, rooms=rooms)
 
 #register
 @app.route("/register", methods=['GET', 'POST'])
@@ -122,54 +124,55 @@ def send_friend_request(data):
 # chatroom
 @app.route("/chatroom")
 def room():
-    room = session.get("room")
-    if room is None or session.get("name") is None or room not in rooms:
+    room_code = session.get("room")
+    if room_code is None or session.get("name") is None:
         return redirect(url_for("chathome"))
-    return render_template("chatroom.html", code=room, message=rooms[room]["message"])
+    room = Room.query.filter_by(code=room_code).first()
+    if not room:
+        return redirect(url_for("chathome"))
+    messages = room.messages
+    return render_template("chatroom.html", code=room.code, message=messages)
 
 # socket listening join event
 @socketio.on('connect')
 def connect(auth):
-    room = session.get("room")
+    room_code = session.get("room")
     name = session.get("name")
-    if not room or not name:
+    if not room_code or not name:
         return
-    if room not in rooms:
-        leave_room(room)
+    room = Room.query.filter_by(code=room_code).first()
+    if not room:
+        leave_room(room_code)
         return
     session["name"] = name
-    join_room(room)
-    # send join message to room
-    send({"name": name, "message": "has entered the room"}, to=room)
-    rooms[room]["members"] += 1
+    join_room(room_code)
+    
+    # room.messages.append(Message(message=f"{name} has entered the room", user_name=current_user.username, room_id=room.id))
+    # db.session.commit()
+    emit("message", {"name": name, "message": "has entered the room"}, to=room_code)
 
-# socket listening leave event
 @socketio.on("disconnect")
 def disconnect():
-    room = session.get("room")
+    room_code = session.get("room")
     name = session.get("name")
-    leave_room(room)
-    
-    if room in rooms:
-        rooms[room]["members"] -= 1
-        if rooms[room]["members"] <= 0:
-            del rooms[room]
-    # send leave message to room
-    send({"name": name, "message": "has left the room"}, to=room)
+    # if room_code:
+    #     room = Room.query.filter_by(code=room_code).first()
+    #     if room:
+    #         room.messages.append(Message(message=f"{name} has left the room", user_name=current_user.username, room_id=room.id))
+    #         db.session.commit()
+    leave_room(room_code)
 
-# socket listening sending message event
 @socketio.on("message")
 def message(data):
-    room = session.get("room")
-    if room not in rooms:
-        return
-    name = session.get("name")
-    content = {
-        "name": name,
-        "message": data["data"]
-    }
-    # send message
-    send(content, to=room)
-    # save message for history
-    rooms[room]["message"].append(content)
-    print(f"{session.get('name')} said: {data['data']}")
+    room_code = session.get("room")
+    if room_code:
+        room = Room.query.filter_by(code=room_code).first()
+        if room:
+            name = session.get("name")
+            content = {
+                "name": name,
+                "message": data["data"]
+            }
+            room.messages.append(Message(message=data["data"], user_name=current_user.username, room_id=room.id))
+            db.session.commit()
+            send(content, to=room_code)
