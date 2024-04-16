@@ -2,7 +2,13 @@
 {% block content %}
 <div class="message-box">
     <h2>Chat Room: {{code}}</h2>
-    <div class="message" id="messages"></div>
+    <div class="message" id="messages">
+        {% for msg in message %}
+        <div class="text">
+            <span><strong>{{ msg.user_name}}</strong>: {{ msg.message }}</span>
+        </div>
+        {% endfor %}
+    </div>
     <div class="inputs">
         <input type="text" rows="4" placeholder="Message" name="message" id="message"/>
         <button type="buttion" name="send" id="send-btn" onClick="sendMessage()">Send</button>
@@ -10,20 +16,17 @@
 </div>
 <script type="text/javascript">
     var socketio = io()
-
     const message = document.getElementById("messages")
-
     const createMessage = (name, msg) => {
         const content = `
-        <div class="text">
-            <span>
-                <strong>${name}</strong>: ${msg}
-        </div>
+            <div class="text">
+                <span><strong>${name}</strong>: ${msg}</span>
+            </div>
         `;
         messages.innerHTML += content;
     };
 
-    socketio.on("message", (data) =>{
+    socketio.on("message", (data) => {
         createMessage(data.name, data.message);
     });
 
@@ -34,10 +37,4 @@
         message.value = "";
     };
 </script>
-
-{% for msg in message %}
-    <script type="text/javascript">
-        createMessage("{{msg.name}}", "{{msg.message}}");
-    </script>
-{% endfor %}
 {% endblock %}

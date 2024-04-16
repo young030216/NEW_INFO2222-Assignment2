@@ -6,6 +6,9 @@ from flask_login import UserMixin
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+
+
 ##User table
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,13 +20,20 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}','{self.password}')"
 
+##Room table
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(4), unique=True, nullable=False)
+    messages = db.relationship('Message', backref='room', lazy=True)
+    def __repr__(self):
+        return f"Room('{self.code}')"
 
 ##Message table
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
+    user_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
     def __repr__(self):
         return f"Mesage('{self.message}')"  
     
