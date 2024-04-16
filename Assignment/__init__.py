@@ -12,5 +12,4 @@ socketio = SocketIO(app)
 bcrypt = Bcrypt(app) 
 login_manager = LoginManager(app)
 
-
 from Assignment import routes
