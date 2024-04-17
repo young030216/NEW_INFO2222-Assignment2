@@ -8,14 +8,17 @@ from string import ascii_uppercase
 import random
 
 
-rooms = {}
 
 def generate_unique_code(Length):
+    rooms = Room.query.all()
+    all_rooms = []
+    for room in rooms:
+        all_rooms.append(room.code)
     while True:
         code = ''
         for _ in range(Length):
             code += random.choice(ascii_uppercase)
-        if code not in rooms:
+        if code not in all_rooms:
             break
         
     return code
