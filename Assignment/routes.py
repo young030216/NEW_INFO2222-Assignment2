@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response
 from Assignment import app, db, bcrypt, socketio
 from Assignment.forms import Registeration, Login
-from Assignment.models import User, Message, FriendRequest, Room
+from Assignment.models import User, Message, FriendRequest, Room, FriendRoom
 from flask_login import login_user, current_user
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
@@ -38,11 +38,39 @@ def chathome():
     pending_requests = FriendRequest.query.filter_by(receiver_id=current_user_id, accepted=False).all()
     friend_requests = FriendRequest.query.filter_by(sender_id=current_user_id, accepted=True).all()
     rooms = Room.query.all()
+    friendrooms = FriendRoom.query.all()
 
     if request.method == "POST":
         code = request.form.get("code")
         join = request.form.get("join", False)
         create = request.form.get("create", False)
+        friend_name = request.form.get("clickfriend", False)
+
+        if friend_name != False:
+            exist_room = FriendRoom.query.filter_by(user_name=current_user.username, friend_name=friend_name).first()
+            exist_friend_room = FriendRoom.query.filter_by(friend_name=current_user.username, user_name=friend_name).first()
+            
+            if exist_friend_room or exist_room:
+                print("f**!")
+                if exist_friend_room:
+                    session["room"] = exist_friend_room.room_code
+                elif exist_room:
+                    session["room"] = exist_room.room_code
+                session["name"] = current_user_name
+                return redirect(url_for("room"))
+
+    
+            room = Room(code=generate_unique_code(4))
+            friendroom = FriendRoom(user_name=current_user_name, friend_name=friend_name, room_code=room.code)
+            db.session.add(room)
+            db.session.add(friendroom)
+            db.session.commit()
+
+            session["room"] = room.code
+            session["name"] = current_user_name
+            return redirect(url_for("room"))
+
+
         if join != False and not code:
             return render_template('chathome.html', chat_error='Please enter a Room code.', current_user_name=current_user_name, rooms=rooms, friend_requests=pending_requests)
 
