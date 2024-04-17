@@ -24,7 +24,7 @@
     <h3>Friend List</h3>
     <ul>
         {% for friend in friends %}
-            <li>{{ friend.username }}</li>
+            <li>{{ friend.receiver.username }}</li>
         {% endfor %}
     </ul>
 </div>
@@ -35,9 +35,10 @@
         {% for request in friend_requests %}
             <li>{{ request.sender.username }} sent you a friend request</li>
             <form method="post">
-                <input type="hidden" name="request_id" value="{{ request.id }}">
-                <button type="submit" name="accept">Accept</button>
-                <button type="submit" name="reject">Reject</button>
+                <input type="hidden" name="request_id" id="request_id" value="{{ request.id }}">
+                <input type="hidden" name="state" id="accept" value="{{ request.accepted }}">
+                <button type="button" name="accept" id="accept-btn" onclick="acceptRequest()">Accept</button>
+                <button type="button" name="reject" id="reject-btn" onclick="rejectRequest()">Reject</button>
             </form>
         {% endfor %}
     </ul>
@@ -68,6 +69,37 @@
         var receiver = data.receiver;
         alert('You send a friend request to ' + receiver);
     });
+
+    const acceptRequest = () =>{
+        const id = document.getElementById('request_id').value;
+        const state = document.getElementById('accept').value;
+        socketio.emit('accept_request', {request_id: id, state: state});
+    }
+
+    socketio.on('accept', function() {
+        alert('You have accepted the request.');
+    });
+
+    socketio.on('accept_error', function(data) {
+        var error = data.error;
+        alert(error);
+    });
+
+    const rejectRequest = () =>{
+        const id = document.getElementById('request_id').value;
+        socketio.emit('reject_request', {request_id: id});
+    }   
+    
+    socketio.on('reject', function() {
+        alert('You have rejected the request.');
+    });
+
+    socketio.on('reject_error', function(data) {
+        var error = data.error;
+        alert(error);
+    });
+
+
 </script>
 
 {% endblock %}
