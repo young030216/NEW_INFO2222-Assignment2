@@ -20,14 +20,15 @@
     <button type="button" name="request" id="send_request" onClick="sendRequest()">Send add request</button> 
 </div>
 
-<div class="friend-list">
+<form method="post">
     <h3>Friend List</h3>
-    <ul>
+    <div class="friend-list">
         {% for friend in friends %}
-            <li>{{ friend.receiver.username }}</li>
+            <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}">{{ friend.receiver.username }}</button>
         {% endfor %}
-    </ul>
-</div>
+    </div>
+</form>
+  
 
 <div class="friend-requests">
     <h3>Friend Requests</h3>

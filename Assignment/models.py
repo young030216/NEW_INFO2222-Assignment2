@@ -21,8 +21,16 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(4), unique=True, nullable=False)
     messages = db.relationship('Message', backref='room', lazy=True)
+
     def __repr__(self):
         return f"Room('{self.code}')"
+
+##Friend Room table
+class FriendRoom(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
+    friend_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
+    room_code = db.Column(db.String(4), db.ForeignKey('room.code'), nullable=False)
 
 ##Message table
 class Message(db.Model):
@@ -30,6 +38,7 @@ class Message(db.Model):
     message = db.Column(db.Text, nullable=False)
     user_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
+
     def __repr__(self):
         return f"Mesage('{self.message}')"  
     
