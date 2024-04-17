@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{INFO2222 PROJECT1}
+\author{Young \and Sherlock \and CC16-11 Group}
+\date{}
+\begin{document}
+
+\maketitle
+
+\section{Part 1: Explain how you addressed each of the above items (basic functionality and additional criteria)}
+\subsection{User login} 
+For user login, we created a table in the database. In the home HTML, users can select to login or register an account. Once they have their own account, they can login with the username and password they created. In the backend server, we use the \textbf{flask\_wtf} module to set the rules for the username and password and check if there is a corresponding user in the database.
+
+\subsection{Display friend list}
+For displaying friend list, we create a table to handle friend request in database, set the defult status as false, when user send friend request and receiver accept it, we create a new row for receiver and set both of status to true of their friend request data row. And in the backend server, we query all the data related to current user, deliver all friend status equal true to frontend, the html. And for those data, we list all of them as a submit buttion to make sure it work for click and chat with friend function.
+
+\subsection{Add friend}
+ For adding friend, we create a table which be introduced in \textbf{Dispaly friend list}, and write javascript in frontend, in backend server, we use socketio to listent event, when server listend adding friend event, we created data in friend reqeust table, when user login, we query all the data that status is false and reveiver is user itself in that table, show two buttion in frontend and also using socketio to listen accept/reject friend request event, when server listen, it will set correspond friend request data status to true/false.
+ 
+\end{document}
