@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response
 from Assignment import app, db, bcrypt, socketio
 from Assignment.forms import Registeration, Login
-from Assignment.models import User, Message, Friend, FriendRequest, Room
+from Assignment.models import User, Message, FriendRequest, Room
 from flask_login import login_user, current_user
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
@@ -33,6 +33,7 @@ def chathome():
     current_user = User.query.filter_by(username=current_user_name).first()
     current_user_id = current_user.id
     pending_requests = FriendRequest.query.filter_by(receiver_id=current_user_id, accepted=False).all()
+    friend_requests = FriendRequest.query.filter_by(sender_id=current_user_id, accepted=True).all()
     rooms = Room.query.all()
 
     if request.method == "POST":
@@ -54,7 +55,7 @@ def chathome():
         session["name"] = current_user_name
         return redirect(url_for("room"))
 
-    return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, rooms=rooms)
+    return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, rooms=rooms)
 
 #register
 @app.route("/register", methods=['GET', 'POST'])
@@ -105,7 +106,7 @@ def send_friend_request(data):
         emit('friend_request_error', {'error': 'This user does not exist.'})
         return
     sender = User.query.filter_by(username=sender_name).first()
-    if friend_username in [friend.username for friend in current_user.friends]:
+    if friend_username in [friend.sender.username for friend in FriendRequest.query.filter_by(sender_id=sender.id, accepted=True).all()]:
         emit('friend_request_error', {'error': 'This user has already been your friend.'})
         return
     
@@ -118,7 +119,37 @@ def send_friend_request(data):
     else:
         emit('friend_request_error', {'error': 'You already send the friend request.'})
 
+# Socket listening for accepting friend request event
+@socketio.on('accept_request')
+def accept_request(data):
+    request_id = data.get('request_id')
 
+    curr_request = FriendRequest.query.filter_by(id=request_id).first()
+    if curr_request:
+        if not curr_request.accepted:
+            FriendRequest.query.filter_by(id=request_id).update({'accepted': True})
+            friend_request = FriendRequest(sender_id=curr_request.receiver.id, receiver_id=curr_request.sender.id, accepted=True)
+            db.session.add(friend_request)
+            db.session.commit()
+            emit('accept')
+        else:
+            emit('accept_error', {'error': 'You have already accepted the friend request.'})
+    else:
+        emit('accept_error', {'error': 'Friend request not found.'})
+    
+# Socket listening for rejecting friend request event
+@socketio.on('reject_request')
+def reject_request(data):
+    request_id = data.get('request_id')
+
+    curr_request = FriendRequest.query.filter_by(id=request_id).first()
+    if curr_request:
+        FriendRequest.query.filter_by(id=request_id).delete()
+        db.session.commit()
+        emit('reject')
+    else:
+        emit('reject_error', {'error': 'Friend request not found.'})
+        db.session.rollback()
 
 
 # chatroom

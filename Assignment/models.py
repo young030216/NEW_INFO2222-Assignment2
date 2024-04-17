@@ -6,16 +6,12 @@ from flask_login import UserMixin
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
-
-
 ##User table
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     messages = db.relationship('Message', lazy=True)
-    friends = db.relationship('Friend', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}','{self.password}')"
@@ -50,13 +46,4 @@ class FriendRequest(db.Model):
 
     def __repr__(self):
         return f"Friend Request from('{self.sender_id}') to ('{self.receiver_id}', state:('{self.accepted}'))"
-
-##Friend table
-class Friend(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return f"Friend('{self.username}')"
     
