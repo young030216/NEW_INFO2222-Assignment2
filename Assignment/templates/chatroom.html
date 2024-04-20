@@ -1,22 +1,58 @@
 {% extends 'base.html' %}
 {% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 <div class="message-box">
     <h2>Chat Room: {{code}}</h2>
     <div class="message" id="messages">
         {% for msg in message %}
         <div class="text">
-            <span><strong>{{ msg.user_name}}</strong>: {{ msg.message }}</span>
+            <span><strong>{{ msg.user_name}}</strong>: <span id="decrypted_message_{{ loop.index }}"></span></span>
         </div>
+        <script>
+            var encryptedMessage = "{{ msg.message }}";
+            var user_password = "{{ current_user.password }}";
+            var decryptedMessage = CryptoJS.AES.decrypt(encryptedMessage, user_password).toString(CryptoJS.enc.Utf8);
+            document.getElementById("decrypted_message_{{ loop.index }}").textContent = decryptedMessage;
+        </script>
         {% endfor %}
     </div>
     <div class="inputs">
         <input type="text" rows="4" placeholder="Message" name="message" id="message"/>
-        <button type="buttion" name="send" id="send-btn" onClick="sendMessage()">Send</button>
+        <button type="button" name="send" id="send-btn" onclick="sendMessage()">Send</button>
     </div>
 </div>
 <script type="text/javascript">
     var socketio = io()
-    const message = document.getElementById("messages")
+    var user_password = "{{ current_user.password }}";
+    console.log("password", user_password);
+    
+
+    function sendMessage() {
+        var message = document.getElementById("message").value;
+        console.log("message", message);
+        if (message == "") return;
+
+        var encryptedMessage = CryptoJS.AES.encrypt(message,user_password).toString();
+        var mac = CryptoJS.HmacSHA256(message,user_password).toString();
+        
+        console.log("Encrypted Message:", encryptedMessage);
+        console.log("MAC:", mac);
+
+        socketio.emit("message", {data: encryptedMessage, mac: mac});
+
+        document.getElementById("message").value = "";
+    }
+    
+    socketio.on("enter", (data) => {
+        createMessage(data.name, data.message);
+    });
+
+    socketio.on("message", (data) => {
+        var decryptedMessage = CryptoJS.AES.decrypt(data.message, user_password).toString(CryptoJS.enc.Utf8);
+        console.log("decrypt", decryptedMessage);
+        createMessage(data.name, decryptedMessage);
+    });
+
     const createMessage = (name, msg) => {
         const content = `
             <div class="text">
@@ -26,15 +62,11 @@
         messages.innerHTML += content;
     };
 
-    socketio.on("message", (data) => {
-        createMessage(data.name, data.message);
-    });
+    function verifyMAC(message, mac) {
+        var generatedMAC = CryptoJS.HmacSHA256(message, user_password).toString();
+        console.log("result", (generatedMAC==mac));
+        return generatedMAC == mac;
+    }
 
-    const sendMessage = () => {
-        const message = document.getElementById("message")
-        if (message.value == "") return;
-        socketio.emit("message", {data: message.value});
-        message.value = "";
-    };
 </script>
 {% endblock %}
