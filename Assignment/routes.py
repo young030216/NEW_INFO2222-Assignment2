@@ -1,6 +1,5 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response
-from Assignment import app, db, bcrypt, socketio
-from Assignment.forms import Registeration, Login
+from Assignment import app, db, socketio
 from Assignment.models import User, Message, FriendRequest, Room, FriendRoom
 from flask_login import login_user, current_user
 from flask_socketio import join_room, leave_room, send, emit
@@ -51,7 +50,7 @@ def chathome():
             exist_friend_room = FriendRoom.query.filter_by(friend_name=current_user.username, user_name=friend_name).first()
             
             if exist_friend_room or exist_room:
-                print("f**!")
+                
                 if exist_friend_room:
                     session["room"] = exist_friend_room.room_code
                 elif exist_room:
@@ -91,36 +90,52 @@ def chathome():
 #register
 @app.route("/register", methods=['GET', 'POST'])
 def register():
-    form = Registeration()
-    if form.validate_on_submit():
-        ##store the name and passwrod into db
-        hassed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username = form.username.data, password = hassed_password)
+    if request.method == "POST":
+        username =  request.form.get("username")
+        password =  request.form.get("password")
+        salt = request.form.get("salt")
+        if len(username) < 2 or len(username) > 20 or (username == ""):
+            return render_template('register.html', register_error='Please enter a valid username, length from 2 to 20.')
+        user = User.query.filter_by(username=username).first()
+        if(user != None):
+            return render_template('register.html', register_error='Username already exist')
+        print(f'username: {username}, PWD: {password}, SALT: {salt}')
+        user = User(username = username, password = password, salt = salt)
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to login', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
+
+    return render_template('register.html', title='register')
+
+
+@socketio.on('user_salt')
+def get_user_salt(data):
+    username = data.get('username')
+    user = User.query.filter_by(username=username).first()
+    if user:
+        salt = user.salt
+        emit('salt', {'salt': salt})
     else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f'Error in {getattr(form, field).label.text}: {error}', 'danger')
-    return render_template('register.html', title='Register', form=form)
+        emit('login_error', {'error': 'This user does not exist.'})
+        return
 
 #login
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    form = Login()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user)
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        if user and (user.password == password):
             response = make_response(redirect(url_for('chathome')))
             response.set_cookie('username', user.username)
             return response
         else:
             flash('Login Unsuccessful. Please check username and password','danger')
             
-    return render_template('login.html', title='Login', form = form)
+    return render_template('login.html', title='login')
+
 
 
 # Socket listening for sending friend request event

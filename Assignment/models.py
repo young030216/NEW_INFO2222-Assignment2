@@ -10,11 +10,13 @@ def load_user(user_id):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(64), nullable=False)
+    salt = db.Column(db.String(4), nullable=False)
     messages = db.relationship('Message', lazy=True)
 
+
     def __repr__(self):
-        return f"User('{self.username}','{self.password}')"
+        return f"User('{self.username}','{self.password}','{self.salt}')"
 
 ##Room table
 class Room(db.Model):
@@ -28,15 +30,15 @@ class Room(db.Model):
 ##Friend Room table
 class FriendRoom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
-    friend_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
+    user_name = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
+    friend_name = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
     room_code = db.Column(db.String(4), db.ForeignKey('room.code'), nullable=False)
 
 ##Message table
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.Text, nullable=False)
-    user_name = db.Column(db.Integer, db.ForeignKey('user.username'), nullable=False)
+    user_name = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
 
     def __repr__(self):
@@ -55,4 +57,3 @@ class FriendRequest(db.Model):
 
     def __repr__(self):
         return f"Friend Request from('{self.sender_id}') to ('{self.receiver_id}', state:('{self.accepted}'))"
-    
