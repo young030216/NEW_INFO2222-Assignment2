@@ -4,72 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
     <div class="content-section">
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
+        
+        <form method="POST">
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Sign up</legend>
-                <div class="form-group">
-                    {{ form.username.label(class="form-control-label") }}
-                    
-                    {%if form.username.errors%}
-                        {{ form.username(class="form-control form-control-lg is-invalid")}}
-                        <div class="invalid-feedback">
-                            {% for errors in form.username.errors%}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {%else%}
-                        {{ form.username(class="form-control form-control-lg") }}
-                    {% endif %}
+                <div class="register">
+                    <input type="text" placeholder="username" name="username" value="{{username}}" />
+                    <input type="password" placeholder="password" name="password" value="{{password}}" /> 
+                    <input type="hidden" name="salt" id="salt" />
                 </div>
-                <div class="form-group">
-                    {{ form.password.label(class="form-control-label") }}
-
-                    {%if form.password.errors%}
-                        {{ form.password(class="form-control form-control-lg is-invalid")}}
-                        <div class="invalid-feedback">
-                            {% for errors in form.username.errors%}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {%else%}
-                        {{ form.password(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-                <div class="form-group">
-                    {{ form.password_confirm.label(class="form-control-label") }}
-
-                    {%if form.password_confirm.errors%}
-                        {{ form.password_confirm(class="form-control form-control-lg is-invalid")}}
-                        <div class="invalid-feedback">
-                            {% for errors in form.username.errors%}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {%else%}
-                        {{ form.password_confirm(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
+                {%if register_error %}
+                <div class="alert alert-danger">{{ register_error}}</div>
+                {% endif %} 
             </fieldset>
             <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
+                <button type="submit" class="btn btn-outline-info" onclick="hashPassword()">Sign up</button>
             </div>
         </form>
     </div>
+
+    <script>
+
+        function hashPassword() {
+            var passwordField = document.getElementsByName('password')[0];
+            var passwordValue = passwordField.value;
+            var salt = generateSalt();
+            var saltedPassword = passwordValue + salt;
+            var hashedPassword = CryptoJS.SHA256(saltedPassword).toString(CryptoJS.enc.Hex);
+            passwordField.value = hashedPassword;
+            document.getElementById('salt').value = salt;
+        }
+
+        function generateSalt(){
+            var length = 4;
+            var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var salt = ""
+            for (var i = 0; i < length; i++) {
+                salt += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            return salt;
+        }
+
+    </script>
 </body>
 </html>
