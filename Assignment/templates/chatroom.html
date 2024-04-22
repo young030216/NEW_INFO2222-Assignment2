@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+<script>
+    var sha256Bytes;
+    var ec;
+    var keyPair;
+    var friendPublicKey;
+    var sk;
+</script>
 <div class="message-box">
     <h2>Chat Room: {{code}}</h2>
     <div class="message" id="messages">
@@ -11,7 +19,13 @@
         <script>
             var encryptedMessage = "{{ msg.message }}";
             var user_password = "{{ current_user.password }}";
-            var decryptedMessage = CryptoJS.AES.decrypt(encryptedMessage, user_password).toString(CryptoJS.enc.Utf8);
+            var fpk = "{{ friend_pk }}"
+            ec = new elliptic.ec('secp256k1');
+            sha256Bytes = new Uint8Array(user_password.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            keyPair = ec.genKeyPair({ entropy: sha256Bytes });
+            friendPublicKey = ec.keyFromPublic(fpk, 'hex').getPublic();
+            sk = keyPair.derive(friendPublicKey, keyPair.getPrivate()).toString('hex');
+            var decryptedMessage = CryptoJS.AES.decrypt(encryptedMessage, sk).toString(CryptoJS.enc.Utf8);
             document.getElementById("decrypted_message_{{ loop.index }}").textContent = decryptedMessage;
         </script>
         {% endfor %}
@@ -24,22 +38,20 @@
 <script type="text/javascript">
     var socketio = io()
     var user_password = "{{ current_user.password }}";
-    console.log("password", user_password);
-    
-
+    var fpk = "{{ friend_pk }}"
+    ec = new elliptic.ec('secp256k1');
+    sha256Bytes = new Uint8Array(user_password.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    keyPair = ec.genKeyPair({ entropy: sha256Bytes });
+    friendPublicKey = ec.keyFromPublic(fpk, 'hex').getPublic();
+    sk = keyPair.derive(friendPublicKey, keyPair.getPrivate()).toString('hex');
     function sendMessage() {
         var message = document.getElementById("message").value;
-        console.log("message", message);
         if (message == "") return;
-
-        var encryptedMessage = CryptoJS.AES.encrypt(message,user_password).toString();
-        var mac = CryptoJS.HmacSHA256(message,user_password).toString();
-        
+        var encryptedMessage = CryptoJS.AES.encrypt(message, sk).toString();
+        var mac = CryptoJS.HmacSHA256(message, sk).toString();
         console.log("Encrypted Message:", encryptedMessage);
         console.log("MAC:", mac);
-
         socketio.emit("message", {data: encryptedMessage, mac: mac});
-
         document.getElementById("message").value = "";
     }
     
@@ -48,9 +60,14 @@
     });
 
     socketio.on("message", (data) => {
-        var decryptedMessage = CryptoJS.AES.decrypt(data.message, user_password).toString(CryptoJS.enc.Utf8);
-        console.log("decrypt", decryptedMessage);
-        createMessage(data.name, decryptedMessage);
+        var decryptedMessage = CryptoJS.AES.decrypt(data.message, sk).toString(CryptoJS.enc.Utf8);
+        var isValid = verifyMAC(decryptedMessage, data.mac);
+        console.log("maccc: ", data.mac)
+        if (isValid) {
+            createMessage(data.name, decryptedMessage);
+        } else {
+            console.log("Message has been tampered with!");
+        }
     });
 
     const createMessage = (name, msg) => {
@@ -63,7 +80,7 @@
     };
 
     function verifyMAC(message, mac) {
-        var generatedMAC = CryptoJS.HmacSHA256(message, user_password).toString();
+        var generatedMAC = CryptoJS.HmacSHA256(message, sk).toString();
         console.log("result", (generatedMAC==mac));
         return generatedMAC == mac;
     }

@@ -3,9 +3,8 @@
 <form method="post">
     <h3>Chat with User</h3>
     <div class="chat">
-        <input type="text" placeholder="Room code" name="code" value="{{code}}" />
-        <button type="submit" name="join">Join a Room</button>
-        <button type="submit" name="create">Create a Room</button>
+        <input type="text" placeholder="Username" name="username" value="{{username}}" />
+        <button type="submit" name="join">Chat with User</button>
     </div>
     {% if chat_error %}
     <div class="alert alert-danger">{{ chat_error }}</div>
@@ -46,11 +45,6 @@
 </div>
 
 <script type="text/javascript">
-    if (typeof friend_requests !== 'undefined') {
-            console.log(friend_requests);
-    } else {
-        console.log('friend_requests is undefined');
-    }
     var socketio = io()
     const friendUsername = document.getElementById('friend_username').value;
   
