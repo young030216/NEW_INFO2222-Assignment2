@@ -23,16 +23,10 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(4), unique=True, nullable=False)
     messages = db.relationship('Message', backref='room', lazy=True)
-
+    creater = db.Column(db.String(20), db.ForeignKey('user.username'),nullable=False)
+    receiver = db.Column(db.String(20), db.ForeignKey('user.username'),nullable=False)
     def __repr__(self):
         return f"Room('{self.code}')"
-
-##Friend Room table
-class FriendRoom(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
-    friend_name = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
-    room_code = db.Column(db.String(4), db.ForeignKey('room.code'), nullable=False)
 
 ##Message table
 class Message(db.Model):
@@ -57,3 +51,8 @@ class FriendRequest(db.Model):
 
     def __repr__(self):
         return f"Friend Request from('{self.sender_id}') to ('{self.receiver_id}', state:('{self.accepted}'))"
+##Key table
+class Key(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
+    public_key = db.Column(db.String(256), nullable=False)
