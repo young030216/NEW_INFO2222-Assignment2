@@ -1,7 +1,9 @@
-body {
-    background: #fafafa;
-    color: #333333;
-    margin-top: 5rem;
+  body {
+    margin: 0;
+    padding: 0;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -9,7 +11,7 @@ body {
   }
   
   .bg-steel {
-    background-color: #5f788a;
+    background-color: #ebe9e7;
   }
   
   .site-header .navbar-nav .nav-link {
@@ -25,11 +27,11 @@ body {
   }
   
   .content-section {
-    background: #ffffff;
-    padding: 10px 20px;
-    border: 1px solid #dddddd;
-    border-radius: 3px;
-    margin-bottom: 20px;
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    background-color: rgba(13, 46, 155, 0.411);
   }
   
   .article-title {
@@ -125,3 +127,157 @@ body {
     color: darkgray;
   }
   
+  button {
+    background-color: rgba(13, 46, 155, 0.411);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin-top: -250px;
+  }
+  .button a {
+    margin: 0 10px;
+    cursor: pointer;
+  }
+  
+  .background {
+    background-color: #000000;
+  }
+
+  .title {
+    text-align: center;
+    color: rgba(13, 46, 155, 0.411);
+    margin-top: 10px;
+  }
+  .image-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .image-container img {
+    width: 100px;
+    height: auto;
+    margin: 0 -5px;
+  }
+
+  .message-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+  }
+
+  .message {
+      text-align: center;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    align-items: center;
+  }
+
+  .chat-form,
+  .friend-list-form,
+  .friend-request-form {
+    margin-bottom: 20px;
+  }
+
+  .chat {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    flex-wrap: wrap;
+  }
+
+  .chat input[type="text"],
+  .friend input[type="text"] {
+    width: 200px;
+    padding: 8px;
+    border: 1px solid #000000;
+    border-radius: 5px;
+  }
+
+  .chat button,
+  .friend button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .chat button {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .friend button {
+    background-color: #28a745;
+    color: #fff;
+  }
+
+  .friend-list {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .friend-list button {
+    margin: 5px;
+    padding: 8px 15px;
+    background-color: rgba(13, 46, 155, 0.411);
+    color: #212529;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .friend-requests ul {
+    list-style: none;
+  }
+
+  .friend-requests li {
+    margin-bottom: 10px;
+  }
+
+  .friend-requests button {
+    margin-right: 10px;
+  }
+
+  .friend-request {
+    font-size: 20px;
+    color: rgba(13, 46, 155, 0.411);
+    background-color: rgb(255, 255, 255);
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+
+  .alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 8px;
+    border-radius: 5px;
+    max-width: 200px;
+    margin-left: 130px;
+  }
+  .profile {
+    display: flex;
+    justify-content: space-between;
+    float: right;
+  }
+  .profile_text{
+    width:150px;
+    color:rgba(13, 46, 155, 0.411);
+    margin-top: 10px;
+  }

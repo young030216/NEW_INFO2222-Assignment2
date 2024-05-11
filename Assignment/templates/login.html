@@ -10,20 +10,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 </head>
 <body>
+    <h1 class="title">Login</h1>
     <div class="content-section">
         <form method="POST">
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Login</legend>
                 <div class="Login">
                     <input type="text" placeholder="username" name="username" value="{{username}}" />
                     <input type="password" placeholder="password" name="password" value="{{password}}" /> 
                 </div>
                 {% if login_error %}
-                <div class="alert alert-danger">{{ login_error }}</div>
+                <div class="alert">{{ login_error }}</div>
                 {% endif %} 
             </fieldset>
             <div class="form-group">
                 <button type="button" class="btn btn-outline-info" onclick="login()">Login</button>
+                <button type="button" onclick="goBack()">Back</button>
             </div>
         </form>
     </div>
@@ -45,6 +46,9 @@
                 const error = data.error;
                 alert(error);
             });
+        const goBack = () =>{
+            window.location.href = "/";
+        }
     </script>
 </body>
 </html>

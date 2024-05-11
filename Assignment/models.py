@@ -1,10 +1,18 @@
 ##database
 from Assignment import db, login_manager
 from flask_login import UserMixin
+from enum import Enum
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+###Role table
+class UserRole(Enum):
+    student = 'STUDENT'
+    academics = 'ACADEMICS STAFF'
+    administrative = 'ADMINISTRATIVE STAFF'
+    admin = 'ADMIN STAFF'
 
 ##User table
 class User(db.Model, UserMixin):
@@ -13,7 +21,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(64), nullable=False)
     salt = db.Column(db.String(4), nullable=False)
     messages = db.relationship('Message', lazy=True)
-
+    role = db.Column(db.Enum(UserRole))
 
     def __repr__(self):
         return f"User('{self.username}','{self.password}','{self.salt}')"

@@ -1,6 +1,6 @@
-from flask import render_template, url_for, flash, redirect, request, session, make_response
+from flask import render_template, url_for, flash, redirect, request, session, make_response, jsonify
 from Assignment import app, db, socketio
-from Assignment.models import User, Message, FriendRequest, Room, Key
+from Assignment.models import User, Message, FriendRequest, Room, Key, UserRole
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
 import random
@@ -70,13 +70,13 @@ def chathome():
 
 
         if join != False and not user:
-            return render_template('chathome.html', chat_error='Please enter a username', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests)
+            return render_template('chathome.html', chat_error='Please enter a username', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
 
         exist_userroom = Room.query.filter_by(creater=current_user_name, receiver=user).first()
         receive_room = Room.query.filter_by(receiver=current_user_name, creater=user).first()
         exist_user = User.query.filter_by(username=user).first()
         if not exist_user:
-            return render_template('chathome.html', chat_error='User does not exist.', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests)
+            return render_template('chathome.html', chat_error='User does not exist.', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
         if exist_userroom or receive_room:
                 if(exist_userroom):
                     session["room"] = exist_userroom.code
@@ -97,7 +97,7 @@ def chathome():
             friend_pk = Key.query.filter_by(username=user).first()
             return redirect(url_for("room",friend_pk=friend_pk.public_key))
 
-    return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests)
+    return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role =current_user.role.value)
 
 #register
 @app.route("/register", methods=['GET', 'POST'])
@@ -117,7 +117,7 @@ def register():
             key = Key(username=username, public_key = pk)
             db.session.add(key)
             db.session.commit()
-        user = User(username = username, password = password, salt = salt)
+        user = User(username = username, password = password, salt = salt, role = UserRole.student)
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to login', 'success')
@@ -216,6 +216,14 @@ def reject_request(data):
         emit('reject_error', {'error': 'Friend request not found.'})
         db.session.rollback()
 
+@socketio.on("remove")
+def remove(data):
+    fid = data.get("fid")
+    id = data.get("id")
+    FriendRequest.query.filter_by(sender_id=id, receiver_id=fid).delete()
+    FriendRequest.query.filter_by(receiver_id=id, sender_id=fid).delete()
+    db.session.commit()
+    emit("remove_msg")
 
 # chatroom
 @app.route("/chatroom")
