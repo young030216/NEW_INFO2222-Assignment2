@@ -6,7 +6,13 @@
     <title>Home</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
-<body>
+<body class="background">
+    <h1 class="title">:)</h1>
+    <div class="image-container">
+    <img src="../static/book.jpg" alt="Book">
+    <img src="../static/chat.png" alt="Chat">
+    <img src="../static/friend.png" alt="Chat">
+    </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -16,7 +22,9 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <a href="login"><button>Login</button></a>
-    <a href="register"><button>Register</button></a>
+    <div class="button">
+        <a href="login"><button>Login</button></a>
+        <a href="register"><button>Register</button></a>
+    </div>
 </body>
 </html>

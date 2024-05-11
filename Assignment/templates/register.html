@@ -9,11 +9,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
+    <h1 class="title">Sign up</h1>
     <div class="content-section">
         
         <form method="POST">
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Sign up</legend>
                 <div class="register">
                     <input type="text" placeholder="username" name="username" value="{{username}}" />
                     <input type="password" placeholder="password" name="password" value="{{password}}" /> 
@@ -21,11 +21,12 @@
                     <input type="hidden" name="PK" id="PK" />
                 </div>
                 {%if register_error %}
-                <div class="alert alert-danger">{{ register_error}}</div>
+                <div class="alert">{{ register_error}}</div>
                 {% endif %} 
             </fieldset>
             <div class="form-group">
                 <button type="button" class="btn btn-outline-info" onclick="hashPassword()">Sign up</button>
+                <button type="button" onclick="goBack()">Back</button>
             </div>
         </form>
     </div>
@@ -55,6 +56,10 @@
                 salt += charset.charAt(Math.floor(Math.random() * charset.length));
             }
             return salt;
+        }
+
+        function goBack(){
+            window.location.href = "/";
         }
 
     </script>

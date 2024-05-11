@@ -1,47 +1,57 @@
 {% extends 'base.html' %}
 {% block content %}
-<form method="post">
-    <h3>Chat with User</h3>
-    <div class="chat">
-        <input type="text" placeholder="Username" name="username" value="{{username}}" />
-        <button type="submit" name="join">Chat with User</button>
+{% if current_user_name %}
+        <div class="profile">
+            <h3 class="profile_text">Logged in as: {{ current_user_name }}</h3>
+            <h3 class="profile_text">You are: {{ role }}</h3>
+        </div>
+{% endif %}
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="5">
+<div class="container">
+    <form method="post" class="chat-form">
+        <h1 class="title">Chat with user</h1>
+        <div class="friend">
+            <input type="text" placeholder="Username" name="username" value="{{username}}" />
+            <button type="submit" name="join">Chat with User</button>
+        </div>
+        {% if chat_error %}
+        <div class="alert alert-danger">{{ chat_error }}</div>
+        {% endif %}
+    </form>
+
+    <div class="friend">
+        <input type="text" placeholder="Friend username" id="friend_username" value="{{friend}}" />
+        <button type="button" name="request" id="send_request" onClick="sendRequest()">Send add request</button> 
     </div>
-    {% if chat_error %}
-    <div class="alert alert-danger">{{ chat_error }}</div>
-    {% endif %}
-    {% if current_user_name %}
-    <p>Logged in as: {{ current_user_name }}</p>
-    {% endif %}
-</form>
 
-<div class="friend">
-    <input type="text" placeholder="Friend username" id="friend_username" value="{{friend}}" />
-    <button type="button" name="request" id="send_request" onClick="sendRequest()">Send add request</button> 
-</div>
+    <form method="post" class="friend-list-form">
+        <h1 class="title">Fiend List</h1>
+        <div class="friend-list">
+            {% for friend in friends %}
+                <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}">{{ friend.receiver.username }}</button>
+                <input type="hidden" name="friend_id" id="friend_id" value="{{friend.receiver.id}}">
+                <input type="hidden" name="self_id" id="self_id" value="{{friend.sender.id}}">
+                <button type="button" name="remove" id="remove-btn" onclick="removeRequest()">Remove</button>
+            {% endfor %}
+        </div>
+    </form>
 
-<form method="post">
-    <h3>Friend List</h3>
-    <div class="friend-list">
-        {% for friend in friends %}
-            <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}">{{ friend.receiver.username }}</button>
-        {% endfor %}
+    <div class="friend-requests">
+        <h1 class="title">Fiend Request</h1>
+        <ul>
+            {% for request in friend_requests %}
+                <li class="friend-request">{{ request.sender.username }} sent you a friend request
+                    <form method="post" class="friend-request-form">
+                        <input type="hidden" name="request_id" id="request_id" value="{{ request.id }}">
+                        <input type="hidden" name="state" id="accept" value="{{ request.accepted }}">
+                        <button type="button" name="accept" id="accept-btn" onclick="acceptRequest()">Accept</button>
+                        <button type="button" name="reject" id="reject-btn" onclick="rejectRequest()">Reject</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
-</form>
-  
-
-<div class="friend-requests">
-    <h3>Friend Requests</h3>
-    <ul>
-        {% for request in friend_requests %}
-            <li>{{ request.sender.username }} sent you a friend request</li>
-            <form method="post">
-                <input type="hidden" name="request_id" id="request_id" value="{{ request.id }}">
-                <input type="hidden" name="state" id="accept" value="{{ request.accepted }}">
-                <button type="button" name="accept" id="accept-btn" onclick="acceptRequest()">Accept</button>
-                <button type="button" name="reject" id="reject-btn" onclick="rejectRequest()">Reject</button>
-            </form>
-        {% endfor %}
-    </ul>
 </div>
 
 <script type="text/javascript">
@@ -93,6 +103,21 @@
         var error = data.error;
         alert(error);
     });
+
+    const removeRequest = () =>{
+        const fid = document.getElementById('friend_id').value;
+        const id = document.getElementById('self_id').value;
+        socketio.emit("remove", {fid: fid, id:id});
+    }
+
+    socketio.on('remove_msg', function(){
+        goBack();
+        alert("You have remove the user");
+    });
+
+    const goBack = () =>{
+        window.location.href = "/chathome";
+    }
 
 
 </script>
