@@ -34,34 +34,34 @@
     <script>
 
         function hashPassword() {
-            var passwordField = document.getElementsByName('password')[0];
-            var passwordValue = passwordField.value;
+            // var passwordField = document.getElementsByName('password')[0];
+            // var passwordValue = passwordField.value;
 
-            if (!passwordValue) {
-                alert("Password can not be none.");
-                return;
-            }
-            var salt = generateSalt();
-            var saltedPassword = passwordValue + salt;
-            var hashedPassword = CryptoJS.SHA256(saltedPassword).toString(CryptoJS.enc.Hex);
-            passwordField.value = hashedPassword;
-            document.getElementById('salt').value = salt;
-            const ec = new elliptic.ec('secp256k1');
-            const sha256Bytes = new Uint8Array(hashedPassword.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            const keyPair = ec.genKeyPair({ entropy: sha256Bytes });
-            document.getElementById('PK').value = keyPair.getPublic('hex');
+            // if (!passwordValue) {
+            //     alert("Password can not be none.");
+            //     return;
+            // }
+            // var salt = generateSalt();
+            // var saltedPassword = passwordValue + salt;
+            // var hashedPassword = CryptoJS.SHA256(saltedPassword).toString(CryptoJS.enc.Hex);
+            // passwordField.value = hashedPassword;
+            // document.getElementById('salt').value = salt;
+            // const ec = new elliptic.ec('secp256k1');
+            // const sha256Bytes = new Uint8Array(hashedPassword.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            // const keyPair = ec.genKeyPair({ entropy: sha256Bytes });
+            // document.getElementById('PK').value = keyPair.getPublic('hex');
             document.querySelector('form').submit();
         }
 
-        function generateSalt(){
-            var length = 4;
-            var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var salt = ""
-            for (var i = 0; i < length; i++) {
-                salt += charset.charAt(Math.floor(Math.random() * charset.length));
-            }
-            return salt;
-        }
+        // function generateSalt(){
+        //     var length = 4;
+        //     var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        //     var salt = ""
+        //     for (var i = 0; i < length; i++) {
+        //         salt += charset.charAt(Math.floor(Math.random() * charset.length));
+        //     }
+        //     return salt;
+        // }
 
         function goBack(){
             window.location.href = "/";
