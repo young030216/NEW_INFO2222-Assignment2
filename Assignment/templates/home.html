@@ -5,26 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <style>
+        .message-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
 </head>
 <body class="background">
     <h1 class="title">:)</h1>
     <div class="image-container">
-    <img src="../static/book.jpg" alt="Book">
-    <img src="../static/chat.png" alt="Chat">
-    <img src="../static/friend.png" alt="Chat">
+        <img src="../static/book.jpg" alt="Book">
+        <img src="../static/chat.png" alt="Chat">
+        <img src="../static/friend.png" alt="Chat">
     </div>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
     <div class="button">
         <a href="login"><button>Login</button></a>
         <a href="register"><button>Register</button></a>
+    </div>
+    <div class="message-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <div class="alert-home">{{ message }}</div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
 </body>
 </html>
