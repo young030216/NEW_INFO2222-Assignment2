@@ -19,10 +19,10 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(64), nullable=False)
-    salt = db.Column(db.String(4), nullable=False)
+    # salt = db.Column(db.String(4), nullable=False)
     messages = db.relationship('Message', lazy=True)
     role = db.Column(db.Enum(UserRole))
-
+    online = db.Column(db.Boolean, default=False)
     def __repr__(self):
         return f"User('{self.username}','{self.password}','{self.salt}')"
 
@@ -60,7 +60,7 @@ class FriendRequest(db.Model):
     def __repr__(self):
         return f"Friend Request from('{self.sender_id}') to ('{self.receiver_id}', state:('{self.accepted}'))"
 ##Key table
-class Key(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
-    public_key = db.Column(db.String(256), nullable=False)
+# class Key(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
+#     public_key = db.Column(db.String(256), nullable=False)

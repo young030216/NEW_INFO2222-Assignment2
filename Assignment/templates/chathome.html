@@ -31,6 +31,11 @@
         <div class="friend-list">
             {% for friend in friends %}
                 <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}">{{ friend.receiver.username }}</button>
+                {% if friend.receiver.online %} 
+                <p1>Online</p1>
+                {% else %}
+                <p1>Offline</p1>
+                {% endif %}
                 <input type="hidden" name="friend_id" id="friend_id" value="{{friend.receiver.id}}">
                 <input type="hidden" name="self_id" id="self_id" value="{{friend.sender.id}}">
                 <button type="button" name="remove" id="remove-btn" onclick="removeRequest()">Remove</button>

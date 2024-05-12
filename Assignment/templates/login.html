@@ -29,23 +29,22 @@
         </form>
     </div>
     <script>
-        var socketio = io();
+        // var socketio = io();
         const login = () => {
-            const username = document.getElementsByName('username')[0].value;
-            socketio.emit('user_salt', { username: username });
-            socketio.on('salt', function(data) {
-                const passwordField = document.getElementsByName('password')[0];
-                const passwordValue = passwordField.value;
-                const saltedPassword = passwordValue + data.salt;
-                const hashedPassword = CryptoJS.SHA256(saltedPassword).toString(CryptoJS.enc.Hex);
-                passwordField.value = hashedPassword;
+            // const username = document.getElementsByName('username')[0].value;
+            // socketio.emit('user_salt', { username: username });
+            // socketio.on('salt', function(data) {
+            //     const passwordField = document.getElementsByName('password')[0];
+            //     const passwordValue = passwordField.value;
+            //     const saltedPassword = passwordValue + data.salt;
+            //     const hashedPassword = CryptoJS.SHA256(saltedPassword).toString(CryptoJS.enc.Hex);
+            //     passwordField.value = hashedPassword;
                 document.querySelector('form').submit();
-            });
-        };
-        socketio.on('login_error', function(data) {
-                const error = data.error;
-                alert(error);
-            });
+            };
+        // socketio.on('login_error', function(data) {
+        //         const error = data.error;
+        //         alert(error);
+        //     });
         const goBack = () =>{
             window.location.href = "/";
         }

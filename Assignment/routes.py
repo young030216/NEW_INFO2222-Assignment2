@@ -1,10 +1,10 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response, jsonify
 from Assignment import app, db, socketio
-from Assignment.models import User, Message, FriendRequest, Room, Key, UserRole
+from Assignment.models import User, Message, FriendRequest, Room, UserRole
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
 import random
-
+from threading import Lock
 
 
 def generate_unique_code(Length):
@@ -37,7 +37,6 @@ def chathome():
     current_user_id = current_user.id
     pending_requests = FriendRequest.query.filter_by(receiver_id=current_user_id, accepted=False).all()
     friend_requests = FriendRequest.query.filter_by(sender_id=current_user_id, accepted=True).all()
-
     if request.method == "POST":
         user = request.form.get("username")
         join = request.form.get("join", False)
@@ -52,21 +51,21 @@ def chathome():
                 if exist_friend_room:
                     session["room"] = exist_friend_room.code
                     session["name"] = current_user_name
-                    friend_pk = Key.query.filter_by(username=friend_name).first()
-                    return redirect(url_for("room",friend_pk=friend_pk.public_key))
+                    # friend_pk = Key.query.filter_by(username=friend_name).first()
+                    return redirect(url_for("room"))
                 elif exist_room:
                     session["room"] = exist_room.code
                     session["name"] = current_user_name
-                    friend_pk = Key.query.filter_by(username=friend_name).first()
-                    return redirect(url_for("room",friend_pk=friend_pk.public_key))
+                    # friend_pk = Key.query.filter_by(username=friend_name).first()
+                    return redirect(url_for("room"))
 
             room = Room(code=generate_unique_code(4), creater=current_user_name, receiver=friend_name)
             db.session.add(room)
             db.session.commit()
             session["room"] = room.code
             session["name"] = current_user_name
-            friend_pk = Key.query.filter_by(username=friend_name).first()
-            return redirect(url_for("room",friend_pk=friend_pk.public_key))
+            # friend_pk = Key.query.filter_by(username=friend_name).first()
+            return redirect(url_for("room"))
 
 
         if join != False and not user:
@@ -81,21 +80,21 @@ def chathome():
                 if(exist_userroom):
                     session["room"] = exist_userroom.code
                     session["name"] = current_user_name
-                    friend_pk = Key.query.filter_by(username=user).first()
-                    return redirect(url_for("room", friend_pk=friend_pk.public_key))
+                    # friend_pk = Key.query.filter_by(username=user).first()
+                    return redirect(url_for("room"))
                 elif(receive_room):
                     session["room"] = receive_room.code
                     session["name"] = current_user_name
-                    friend_pk = Key.query.filter_by(username=user).first()
-                    return redirect(url_for("room",friend_pk=friend_pk.public_key))
+                    # friend_pk = Key.query.filter_by(username=user).first()
+                    return redirect(url_for("room"))
         else:
             room = Room(code=generate_unique_code(4), creater=current_user_name, receiver=user)
             db.session.add(room)
             db.session.commit()
             session["room"] = room.code
             session["name"] = current_user_name
-            friend_pk = Key.query.filter_by(username=user).first()
-            return redirect(url_for("room",friend_pk=friend_pk.public_key))
+            # friend_pk = Key.query.filter_by(username=user).first()
+            return redirect(url_for("room"))
 
     return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role =current_user.role.value)
 
@@ -105,19 +104,19 @@ def register():
     if request.method == "POST":
         username =  request.form.get("username")
         password =  request.form.get("password")
-        pk = request.form.get('PK')
-        salt = request.form.get("salt")
+        # pk = request.form.get('PK')
+        # salt = request.form.get("salt")
         if len(username) < 2 or len(username) > 20 or (username == ""):
             return render_template('register.html', register_error='Please enter a valid username, length from 2 to 20.')
         user = User.query.filter_by(username=username).first()
         if(user != None):
             return render_template('register.html', register_error='Username already exist')
-        exist = Key.query.filter_by(username=username).first()
-        if(exist == None):
-            key = Key(username=username, public_key = pk)
-            db.session.add(key)
-            db.session.commit()
-        user = User(username = username, password = password, salt = salt, role = UserRole.student)
+        # exist = Key.query.filter_by(username=username).first()
+        # if(exist == None):
+        #     key = Key(username=username, public_key = pk)
+        #     db.session.add(key)
+        #     db.session.commit()
+        user = User(username = username, password = password, role = UserRole.student)
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to login', 'success')
@@ -143,7 +142,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        pk = request.form.get('PK')
+        # pk = request.form.get('PK')
         user = User.query.filter_by(username=username).first()
         if user and (user.password == password):
             response = make_response(redirect(url_for('chathome')))
@@ -229,7 +228,7 @@ def remove(data):
 @app.route("/chatroom")
 def room():
     room_code = session.get("room")
-    friend_pk = request.args.get("friend_pk")
+    # friend_pk = request.args.get("friend_pk")
     current_user_name = request.cookies.get('username')
     current_user = User.query.filter_by(username=current_user_name).first()
     if room_code is None or session.get("name") is None:
@@ -238,37 +237,44 @@ def room():
     if not room:
         return redirect(url_for("home"))
     messages = room.messages
-    return render_template("chatroom.html", code=room.code, message=messages, friend_pk=friend_pk, current_user=current_user)
+    return render_template("chatroom.html", code=room.code, message=messages, current_user=current_user)
 
 # socket listening join event
 @socketio.on('connect')
 def connect(auth):
+    current_user_name = request.cookies.get('username')
+    User.query.filter_by(username=current_user_name).update({'online': True})
+    db.session.commit()
     room_code = session.get("room")
-    name = session.get("name")
-    if not room_code or not name:
-        return
-    room = Room.query.filter_by(code=room_code).first()
-    if not room:
-        leave_room(room_code)
-        return
-    session["name"] = name
-    join_room(room_code)
-    
-    # room.messages.append(Message(message=f"{name} has entered the room", user_name=current_user.username, room_id=room.id))
-    # db.session.commit()
-    emit("enter", {"name": name, "message": "has entered the room"}, to=room_code)
+    if(room_code):
+        name = session.get("name")
+        if not room_code or not name:
+            return
+        room = Room.query.filter_by(code=room_code).first()
+        if not room:
+            leave_room(room_code)
+            return
+        session["name"] = name
+        join_room(room_code)
+        # room.messages.append(Message(message=f"{name} has entered the room", user_name=current_user.username, room_id=room.id))
+        # db.session.commit()
+        emit("enter", {"name": name, "message": "has entered the room"}, to=room_code)
 
 @socketio.on("disconnect")
 def disconnect():
+    current_user_name = request.cookies.get('username')
+    User.query.filter_by(username=current_user_name).update({'online': False})
+    db.session.commit()
     room_code = session.get("room")
-    name = session.get("name")
-    # if room_code:
-    #     room = Room.query.filter_by(code=room_code).first()
-    #     if room:
-    #         room.messages.append(Message(message=f"{name} has left the room", user_name=current_user.username, room_id=room.id))
-    #         db.session.commit()
-    leave_room(room_code)
-    emit("enter", {"name": name, "message": "has left the room"}, to=room_code)
+    if(room_code):
+        name = session.get("name")
+        # if room_code:
+        #     room = Room.query.filter_by(code=room_code).first()
+        #     if room:
+        #         room.messages.append(Message(message=f"{name} has left the room", user_name=current_user.username, room_id=room.id))
+        #         db.session.commit()
+        leave_room(room_code)
+        emit("enter", {"name": name, "message": "has left the room"}, to=room_code)
 
 @socketio.on("message")
 def message(data):
