@@ -36,6 +36,11 @@
         function hashPassword() {
             var passwordField = document.getElementsByName('password')[0];
             var passwordValue = passwordField.value;
+
+            if (!passwordValue) {
+                alert("Password can not be none.");
+                return;
+            }
             var salt = generateSalt();
             var saltedPassword = passwordValue + salt;
             var hashedPassword = CryptoJS.SHA256(saltedPassword).toString(CryptoJS.enc.Hex);
