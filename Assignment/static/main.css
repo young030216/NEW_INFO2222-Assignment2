@@ -271,6 +271,14 @@
     max-width: 200px;
     margin-left: 130px;
   }
+  .alert-home {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 8px;
+    border-radius: 5px;
+    max-width: 200px;
+  }
   .profile {
     display: flex;
     justify-content: space-between;
