@@ -13,8 +13,9 @@
     <form method="post" class="chat-form">
         <h1 class="title">Chat with user</h1>
         <div class="friend">
-            <input type="text" placeholder="Username" name="username" value="{{username}}" />
-            <button type="submit" name="join">Chat with User</button>
+            <input type="text" placeholder="Username" name="code" value="{{username}}" />
+            <button type="submit" name="create">Create Room</button>
+            <button type="submit" name="join">Join Room</button>
         </div>
         {% if chat_error %}
         <div class="alert alert-danger">{{ chat_error }}</div>
@@ -32,9 +33,9 @@
             {% for friend in friends %}
                 <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}">{{ friend.receiver.username }}</button>
                 {% if friend.receiver.online %} 
-                <p1>Online</p1>
+                <img src="../static/green.png" alt="Online" width="2%" height="2%" style="margin-top: 15px;">
                 {% else %}
-                <p1>Offline</p1>
+                <img src="../static/grey.png" alt="Online" width="2%" height="2%" style="margin-top: 15px;">
                 {% endif %}
                 <input type="hidden" name="friend_id" id="friend_id" value="{{friend.receiver.id}}">
                 <input type="hidden" name="self_id" id="self_id" value="{{friend.sender.id}}">
