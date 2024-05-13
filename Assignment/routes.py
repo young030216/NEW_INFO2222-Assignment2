@@ -38,10 +38,10 @@ def chathome():
     pending_requests = FriendRequest.query.filter_by(receiver_id=current_user_id, accepted=False).all()
     friend_requests = FriendRequest.query.filter_by(sender_id=current_user_id, accepted=True).all()
     if request.method == "POST":
-        user = request.form.get("username")
+        room_code = request.form.get("code")
         join = request.form.get("join", False)
         friend_name = request.form.get("clickfriend", False)
-
+        create = request.form.get("create", False)
         if friend_name != False:
             exist_room = Room.query.filter_by(creater=current_user_name, receiver=friend_name).first()
             exist_friend_room = Room.query.filter_by(receiver=current_user_name, creater=friend_name).first()
@@ -68,33 +68,24 @@ def chathome():
             return redirect(url_for("room"))
 
 
-        if join != False and not user:
-            return render_template('chathome.html', chat_error='Please enter a username', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
-
-        exist_userroom = Room.query.filter_by(creater=current_user_name, receiver=user).first()
-        receive_room = Room.query.filter_by(receiver=current_user_name, creater=user).first()
-        exist_user = User.query.filter_by(username=user).first()
-        if not exist_user:
-            return render_template('chathome.html', chat_error='User does not exist.', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
-        if exist_userroom or receive_room:
-                if(exist_userroom):
-                    session["room"] = exist_userroom.code
-                    session["name"] = current_user_name
-                    # friend_pk = Key.query.filter_by(username=user).first()
-                    return redirect(url_for("room"))
-                elif(receive_room):
-                    session["room"] = receive_room.code
-                    session["name"] = current_user_name
-                    # friend_pk = Key.query.filter_by(username=user).first()
-                    return redirect(url_for("room"))
-        else:
-            room = Room(code=generate_unique_code(4), creater=current_user_name, receiver=user)
+        if join != False and not room_code:
+            return render_template('chathome.html', chat_error='Please enter a roomcode', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
+        if(create != False):
+            room = Room(code=generate_unique_code(4))
             db.session.add(room)
             db.session.commit()
             session["room"] = room.code
             session["name"] = current_user_name
             # friend_pk = Key.query.filter_by(username=user).first()
             return redirect(url_for("room"))
+        exist_room = Room.query.filter_by(code=room_code).first()
+        if not exist_room:
+            return render_template('chathome.html', chat_error='Room does not exist.', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
+        if exist_room:
+                session["room"] = exist_room.code
+                session["name"] = current_user_name
+                # friend_pk = Key.query.filter_by(username=user).first()
+                return redirect(url_for("room"))
 
     return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role =current_user.role.value)
 
@@ -258,7 +249,7 @@ def connect(auth):
         join_room(room_code)
         # room.messages.append(Message(message=f"{name} has entered the room", user_name=current_user.username, room_id=room.id))
         # db.session.commit()
-        emit("enter", {"name": name, "message": "has entered the room"}, to=room_code)
+        emit("message", {"name": name, "message": "has entered the room"}, to=room_code)
 
 @socketio.on("disconnect")
 def disconnect():
@@ -274,7 +265,7 @@ def disconnect():
         #         room.messages.append(Message(message=f"{name} has left the room", user_name=current_user.username, room_id=room.id))
         #         db.session.commit()
         leave_room(room_code)
-        emit("enter", {"name": name, "message": "has left the room"}, to=room_code)
+        emit("message", {"name": name, "message": "has left the room"}, to=room_code)
 
 @socketio.on("message")
 def message(data):
@@ -285,8 +276,7 @@ def message(data):
             name = request.cookies.get('username')
             content = {
                 "name": name,
-                "message": data["data"],
-                "mac": data["mac"]
+                "message": data["data"]
             }
             room.messages.append(Message(message=data["data"], user_name=name, room_id=room.id))
             db.session.commit()

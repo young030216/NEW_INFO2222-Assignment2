@@ -31,8 +31,8 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(4), unique=True, nullable=False)
     messages = db.relationship('Message', backref='room', lazy=True)
-    creater = db.Column(db.String(20), db.ForeignKey('user.username'),nullable=False)
-    receiver = db.Column(db.String(20), db.ForeignKey('user.username'),nullable=False)
+    creater = db.Column(db.String(20), db.ForeignKey('user.username'),nullable=True)
+    receiver = db.Column(db.String(20), db.ForeignKey('user.username'),nullable=True)
     def __repr__(self):
         return f"Room('{self.code}')"
 
