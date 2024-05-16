@@ -6,8 +6,14 @@
     background-position: center;
   }
   
-  h1, h2, h3, h4, h5, h6 {
+  h2, h3, h4, h5, h6 {
     color: #444444;
+  }
+  h1 {
+    font-family: FreeMono, monospace;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
   }
   
   .bg-steel {
@@ -222,7 +228,7 @@
   }
 
   .friend button {
-    background-color: #28a745;
+    background-color: #007bff;
     color: #fff;
   }
 
@@ -289,3 +295,157 @@
     color:rgba(13, 46, 155, 0.411);
     margin-top: 10px;
   }
+  .repo-btn{
+    margin-left: 50px;
+    padding-top: 10px;
+  }
+  .repo-box {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    height: 70%;
+    overflow-y: auto;
+    text-align: center;
+}
+  .repo-body {
+    margin: 0;
+    padding: 0;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .post-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0 0 0;
+    text-align: left;
+}
+
+.post-item {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    overflow-y: auto;
+    font-family: FreeMono, monospace
+}
+
+.post-item:hover {
+    background-color: #f0f0f0;
+}
+.post-button-container {
+  display: flex;
+  flex-direction: column;
+  height: auto; /* 或根据需要设置高度 */
+}
+
+.new-post-button {
+  display: block; /* 设置为块级元素 */
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+}
+
+.new-post-button img {
+  width: 100%;
+  height: 100%;
+}
+
+.form-container {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 80%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+input[type="password"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.submit-button {
+  background-color: #DCC7E1;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.role-box {
+  display: inline-block;
+  padding: 2px 5px;
+  border: 1px solid #f5c6cb;
+  border-radius: 3px;
+  background-color: #f8d7da;
+  color: #000000;
+  font-size: 12px;
+  font-family: Impact, fantasy
+}
+
+.role{
+    display: inline-block;
+    padding: 2px 5px;
+    border: 1px solid #f5c6cb;
+    border-radius: 3px;
+    background-color: #f8d7da;
+    color: #000000;
+    font-size: 15px;
+    font-family: Impact, fantasy;
+    font-weight: normal;
+}

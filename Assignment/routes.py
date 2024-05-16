@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response, jsonify
 from Assignment import app, db, socketio
-from Assignment.models import User, Message, FriendRequest, Room, UserRole
+from Assignment.models import User, Message, FriendRequest, Room, UserRole, Post
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
 import random
@@ -27,6 +27,8 @@ def generate_unique_code(Length):
 def home():
     return render_template('home.html', title='homepage')
 
+
+
 #homepage after login
 @app.route("/chathome", methods=["POST", "GET"])
 def chathome():
@@ -42,6 +44,9 @@ def chathome():
         join = request.form.get("join", False)
         friend_name = request.form.get("clickfriend", False)
         create = request.form.get("create", False)
+        repo = request.form.get("repo", False)
+        if(repo != False):
+            return redirect(url_for("repo"))
         if friend_name != False:
             exist_room = Room.query.filter_by(creater=current_user_name, receiver=friend_name).first()
             exist_friend_room = Room.query.filter_by(receiver=current_user_name, creater=friend_name).first()
@@ -89,6 +94,27 @@ def chathome():
 
     return render_template('chathome.html', title='chatroom', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role =current_user.role.value)
 
+
+@app.route("/Knowledge-repository", methods=['GET', 'POST'])
+def repo():
+    posts = Post.query.order_by(Post.id.desc()).all()
+    current_user_name = request.cookies.get('username')
+    if(current_user_name is None):
+        return redirect(url_for("home"))
+    current_user = User.query.filter_by(username=current_user_name).first()
+    if request.method == "POST":
+        make_post = request.form.get("make_post", False)
+        if(make_post != False):
+            return redirect(url_for("make_post"))
+    return render_template("repo-home.html", current_user_name=current_user_name, role =current_user.role.value, posts=posts)
+
+@app.route("/Make-Post")
+def make_post():
+    current_user_name = request.cookies.get('username')
+    if(current_user_name is None):
+        return redirect(url_for("home"))
+    current_user = User.query.filter_by(username=current_user_name).first()
+    return render_template("make-post.html", current_user_name=current_user_name, role =current_user.role.value)
 #register
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -281,3 +307,14 @@ def message(data):
             room.messages.append(Message(message=data["data"], user_name=name, room_id=room.id))
             db.session.commit()
             send(content, to=room_code)
+
+@socketio.on("makePost")
+def makePost(data):
+    title = data.get("title")
+    content = data.get("content")
+    current_user_name = request.cookies.get('username')
+    current_user = User.query.filter_by(username=current_user_name).first()
+    new_post = Post(title=title, content=content, poster = current_user, poster_id=current_user.id)
+    db.session.add(new_post)
+    db.session.commit()
+    emit("newPost")
