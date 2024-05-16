@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge-Repository</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<div class="repo-body">
+    <div class="repo-box">
+        <h1>Knowledge-Repository</h1>
+        <h1>Login as {{ current_user_name }}
+            {% if role %}
+               <span class="role">{{ role }}</span>
+            {% endif %}
+        </h1>
+        <ul class="post-list">
+            {% for post in posts %}
+                <li class="post-item">#{{ post.id }}: {{ post.title }} post by: {{post.poster.username}}
+                    {% if post.poster.role %}
+                        <span class="role-box">{{ post.poster.role.value }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+        <div class="post-button-container">
+            <form method="post">
+                <button class="new-post-button" type="submit" name="make_post">
+                    <img src="../static/plus.png">
+                </button>
+                <button class="new-post-button" type="button" onclick="goBack()">
+                    <img src="../static/back.png">
+                </button>
+            </form>
+        </div>
+    </div>
+</html>
+<script type="text/javascript">
+    var socketio = io()
+    const goBack = () =>{
+        window.location.href = "/chathome";
+    }
+</script>

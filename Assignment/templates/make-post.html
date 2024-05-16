@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Post</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<div class="repo-body">
+    <div class="form-container">
+        <h1>Login as {{ current_user_name }}
+            {% if role %}
+               <span class="role">{{ role }}</span>
+            {% endif %}
+        </h1>
+        <form class="post-form">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Content:</label>
+                <textarea id="content" name="content" rows="10" required></textarea>
+            </div>
+            <button class="submit-button" onclick="makePost()">Post</button>
+            <button class="submit-button" onclick="goBack()">Back</button>
+        </form>
+    </div>
+</div>
+</html>
+<script type="text/javascript">
+    var socketio = io()
+    const makePost = () =>{
+        event.preventDefault();
+        const title = document.getElementById("title")
+        const content = document.getElementById("content")
+        if(title.value == ""){
+            alert("Title can not be empty");
+            return;
+        }
+        if(content.value == ""){
+            alert("Content can not be empty");
+            return;
+        }
+        socketio.emit("makePost", {content: content.value, title: title.value});
+    }
+    socketio.on('newPost', function(){
+        goBack();
+        alert("You have make a post!");
+    });
+    const goBack = () =>{
+        window.location.href = "/Knowledge-repository";
+    }
+</script>

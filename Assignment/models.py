@@ -64,3 +64,13 @@ class FriendRequest(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
 #     username = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
 #     public_key = db.Column(db.String(256), nullable=False)
+
+
+###Post table
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text, nullable=False)
+    poster_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    poster = db.relationship('User', foreign_keys=[poster_id])
+    content = db.Column(db.Text, nullable=False)
+    
