@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
+<div class="background-select-container">
+    <select id="background-select">
+        <option value="default">Pink</option>
+        <option value="background1">Black</option>
+        <option value="background2">White</option>
+        <option value="background3">Green</option>
+    </select>
+</div>
 <div class="repo-body">
     <div class="form-container">
         <h1>Login as {{ current_user_name }}
@@ -51,5 +59,40 @@
     });
     const goBack = () =>{
         window.location.href = "/Knowledge-repository";
+    }
+    window.addEventListener('DOMContentLoaded', applySavedBackground);
+
+    document.getElementById('background-select').addEventListener('change', changeBackground);
+
+    function changeBackground() {
+        var selectedBackground = document.getElementById('background-select').value;
+        
+        localStorage.setItem('selectedBackground', selectedBackground);
+
+        applyBackground(selectedBackground);
+    }
+
+    function applySavedBackground() {
+        var savedBackground = localStorage.getItem('selectedBackground');
+        
+        if (savedBackground) {
+            applyBackground(savedBackground);
+            document.getElementById('background-select').value = savedBackground;
+        }
+    }
+
+    function applyBackground(background) {
+        if (background === 'background1') {
+            document.body.style.background = 'url(../static/background-black.jpg)';
+        } else if (background === 'background2') {
+            document.body.style.background = 'url(../static/white.jpg)';
+            document.body.style.backgroundPosition = '0px -400px';
+        } 
+        else if(background === "background3"){
+            document.body.style.background = 'url(../static/green.jpg)';
+        }
+        else {
+            document.body.style.background = '';
+        }
     }
 </script>

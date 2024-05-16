@@ -220,6 +220,7 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    
   }
 
   .chat button {
@@ -313,7 +314,7 @@
   .repo-body {
     margin: 0;
     padding: 0;
-    background-image: url('background.jpg');
+    /* background-image: url('background.jpg'); */
     background-size: cover;
     background-position: center;
     display: flex;
@@ -448,4 +449,31 @@ textarea {
     font-size: 15px;
     font-family: Impact, fantasy;
     font-weight: normal;
+}
+
+.role-home{
+  display: inline-block;
+  padding: 2px 3px;
+  border: 2px solid #f5c6cb;
+  border-radius: 3px;
+  background-color: #f8d7da;
+  color: #000000;
+  font-size: 15px;
+  font-family: Impact, fantasy;
+  font-weight: normal;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+.message-box-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px;
+}
+.message-box-container  {
+  display: flex;
+  margin-right: 100px;
+}
+.TEXT{
+  color: #ffffff;
 }

@@ -7,8 +7,14 @@
             <h3 class="profile_text">You are: {{ role }}</h3>
         </div>
 {% endif %}
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="1">
+<!-- <meta charset="UTF-8">
+<meta http-equiv="refresh" content="1"> -->
+<select id="background-select">
+    <option value="default">Pink</option>
+    <option value="background1">Black</option>
+    <option value="background2">White</option>
+    <option value="background3">Green</option>
+</select>
 <div class="repo-btn">
     <form method="post">
         <button type="submit" name="repo">Knowledge repository</button>
@@ -36,15 +42,16 @@
         <h1 class="title">Fiend List</h1>
         <div class="friend-list">
             {% for friend in friends %}
-                <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}">{{ friend.receiver.username }}</button>
+                <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}"><div class="TEXT">{{ friend.receiver.username }}</div></button>
                 {% if friend.receiver.online %} 
-                <img src="../static/green.png" alt="Online" width="2%" height="2%" style="margin-top: 15px;">
+                <img src="../static/green.png" alt="Online" width="2%" height="2%" style="margin-top: 15px; margin-right: 3px;">
                 {% else %}
-                <img src="../static/grey.png" alt="Online" width="2%" height="2%" style="margin-top: 15px;">
+                <img src="../static/grey.png" alt="Online" width="2%" height="2%" style="margin-top: 15px; margin-right: 3px;">
                 {% endif %}
+                <span class="role-home">{{ friend.receiver.role.value }}</span>
                 <input type="hidden" name="friend_id" id="friend_id" value="{{friend.receiver.id}}">
                 <input type="hidden" name="self_id" id="self_id" value="{{friend.sender.id}}">
-                <button type="button" name="remove" id="remove-btn" onclick="removeRequest()">Remove</button>
+                <button type="button" name="remove" id="remove-btn" onclick="removeRequest()"><div class="TEXT">Remove</div></button>
             {% endfor %}
         </div>
     </form>
@@ -135,6 +142,41 @@
         window.location.href = "/";
     }
 
+    window.addEventListener('DOMContentLoaded', applySavedBackground);
+
+    document.getElementById('background-select').addEventListener('change', changeBackground);
+
+    function changeBackground() {
+        var selectedBackground = document.getElementById('background-select').value;
+        
+        localStorage.setItem('selectedBackground', selectedBackground);
+
+        applyBackground(selectedBackground);
+    }
+
+    function applySavedBackground() {
+        var savedBackground = localStorage.getItem('selectedBackground');
+        
+        if (savedBackground) {
+            applyBackground(savedBackground);
+            document.getElementById('background-select').value = savedBackground;
+        }
+    }
+
+    function applyBackground(background) {
+        if (background === 'background1') {
+            document.body.style.background = 'url(../static/background-black.jpg)';
+        } else if (background === 'background2') {
+            document.body.style.background = 'url(../static/white.jpg)';
+            document.body.style.backgroundPosition = '0px -400px';
+        } 
+        else if(background === "background3"){
+            document.body.style.background = 'url(../static/green.jpg)';
+        }
+        else {
+            document.body.style.background = '';
+        }
+    }
 
 </script>
 
