@@ -1,13 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="message-box">
-    <h2>Chat Room: {{code}}</h2>
-    <div class="message" id="messages"></div>
-    <div class="inputs">
-        <input type="text" rows="4" placeholder="Message" name="message" id="message"/>
-        <button type="buttion" name="send" id="send-btn" onClick="sendMessage()">Send</button>
-        <button type="button" name="back" id="send-btn" onclick="goBack()">Back</button>
+<div class="message-box-container">
+    <div class="message-box">
+        <h2>Chat Room: {{code}}</h2>
+        <div class="message" id="messages"></div>
+        <div class="inputs">
+            <input type="text" rows="4" placeholder="Message" name="message" id="message"/>
+            <button type="buttion" name="send" id="send-btn" onClick="sendMessage()">Send</button>
+            <button type="button" name="back" id="send-btn" onclick="goBack()">Back</button>
+        </div>
     </div>
+    <select id="background-select">
+        <option value="default">Pink</option>
+        <option value="background1">Black</option>
+        <option value="background2">White</option>
+        <option value="background3">Green</option>
+    </select>
 </div>
 <script type="text/javascript">
     var socketio = io()
@@ -37,7 +45,47 @@
     const goBack = () =>{
         window.location.href = "/chathome";
     }
+
+
+    window.addEventListener('DOMContentLoaded', applySavedBackground);
+
+    document.getElementById('background-select').addEventListener('change', changeBackground);
+
+    function changeBackground() {
+        var selectedBackground = document.getElementById('background-select').value;
+        
+        localStorage.setItem('selectedBackground', selectedBackground);
+
+        applyBackground(selectedBackground);
+    }
+
+    function applySavedBackground() {
+        var savedBackground = localStorage.getItem('selectedBackground');
+        
+        if (savedBackground) {
+            applyBackground(savedBackground);
+            document.getElementById('background-select').value = savedBackground;
+        }
+    }
+
+    function applyBackground(background) {
+        if (background === 'background1') {
+            document.body.style.background = 'url(../static/background-black.jpg)';
+        } else if (background === 'background2') {
+            document.body.style.background = 'url(../static/white-reverse.jpg)';
+            document.body.style.backgroundPosition = '0px -200px';
+            document.body.style.backgroundSize = '100%';
+        } 
+        else if(background === "background3"){
+            document.body.style.background = 'url(../static/green.jpg)';
+        }
+        else {
+            document.body.style.background = '';
+        }
+    }
 </script>
+
+
 {% for msg in message %}
     <script type="text/javascript">
         createMessage("{{msg.user_name}}", "{{msg.message}}");
