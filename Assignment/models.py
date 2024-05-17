@@ -74,3 +74,16 @@ class Post(db.Model):
     poster = db.relationship('User', foreign_keys=[poster_id])
     content = db.Column(db.Text, nullable=False)
     
+###Comment table
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    post = db.relationship('Post', foreign_keys=[post_id])
+
+    def __repr__(self):
+        return f"Comment('{self.content}', '{self.user.username}', '{self.post.title}', '{self.timestamp}')"

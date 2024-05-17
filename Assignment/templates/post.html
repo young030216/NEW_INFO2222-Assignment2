@@ -7,110 +7,146 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
-<div class="background-select-container">
-    <select id="background-select">
-        <option value="default">Pink</option>
-        <option value="background1">Black</option>
-        <option value="background2">White</option>
-        <option value="background3">Green</option>
-    </select>
-</div>
-<div class="box-container">
-    <div class="box" data-post-id="{{ post.id }}">
-        <div class="user-info">
-            <h1>{{ post.poster.username }}
-                {% if role %}
-                    <span class="role">{{ post.poster.role.value }}</span>
+<body>
+    <div class="background-select-container">
+        <select id="background-select">
+            <option value="default">Pink</option>
+            <option value="background1">Black</option>
+            <option value="background2">White</option>
+            <option value="background3">Green</option>
+        </select>
+    </div>
+    <div class="box-container">
+        <div class="box" data-post-id="{{ post.id }}">
+            <div class="user-info">
+                <h1>{{ post.poster.username }}
+                    {% if role %}
+                        <span class="role">{{ post.poster.role.value }}</span>
+                    {% endif %}
+                    :
+                </h1>
+            </div>
+            <div class="post-title" contenteditable="true">
+                <h1>{{ post.title }}</h1>
+            </div>
+            <div class="post-content" contenteditable="true">
+                <p>{{ post.content }}</p>
+            </div>
+            <div class="buttons">
+                {% if current_user.username == post.poster.username or current_user.role.value != 'STUDENT' %}
+                    {% if current_user.role.value != 'STUDENT' %}
+                        <button onclick="handleDelete()">Delete</button>
+                    {% endif %}
+                    <button onclick="handleChange()">Modify</button>
                 {% endif %}
-                :
-            </h1>
-        </div>
-        <div class="post-title" contenteditable="true">
-            <h1>{{ post.title }}</h1>
-        </div>
-        <div class="post-content" contenteditable="true">
-            <p>{{ post.content }}</p>
-        </div>
-        <div class="buttons">
-            {%if current_user.username == post.poster.username  or current_user.role.value != 'STUDENT' %}
-                {%if current_user.role.value != 'STUDENT' %}
-                <button onclick="handleDelete()">Delete</button>
-                {%endif%}
-            <button onclick="handleChange()">Modify</button>
-            <button onclick="goBack()">Back</button>
-            {%endif%}
+            </div>
+            <div class="comment-section">
+                <textarea id="comment-input" placeholder="Enter your comment here..."></textarea>
+                <button onclick="sendComment()">Send</button>
+                <button onclick="goBack()">Back</button>
+            </div>
+            <div class="comments-container">
+                {% for comment in post.comments %}
+                <div class="comment" data-comment-id="{{ comment.id }}">
+                    <p><strong>{{ comment.user.username }}:</strong> {{ comment.content }}</p>
+                    {% if current_user.role.value != 'STUDENT' %}
+                        <button onclick="deleteComment('{{ comment.id }}')">Delete</button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
+    <script type="text/javascript">
+        var socketio = io();
 
-<script type="text/javascript">
-    var socketio = io()
-    window.addEventListener('DOMContentLoaded', applySavedBackground);
+        window.addEventListener('DOMContentLoaded', applySavedBackground);
 
-    document.getElementById('background-select').addEventListener('change', changeBackground);
+        document.getElementById('background-select').addEventListener('change', changeBackground);
 
-    function changeBackground() {
-        var selectedBackground = document.getElementById('background-select').value;
-        
-        localStorage.setItem('selectedBackground', selectedBackground);
-
-        applyBackground(selectedBackground);
-    }
-
-    function applySavedBackground() {
-        var savedBackground = localStorage.getItem('selectedBackground');
-        
-        if (savedBackground) {
-            applyBackground(savedBackground);
-            document.getElementById('background-select').value = savedBackground;
+        function changeBackground() {
+            var selectedBackground = document.getElementById('background-select').value;
+            localStorage.setItem('selectedBackground', selectedBackground);
+            applyBackground(selectedBackground);
         }
-    }
 
-    function applyBackground(background) {
-        if (background === 'background1') {
-            document.body.style.background = 'url(../static/background-black.jpg)';
-        } else if (background === 'background2') {
-            document.body.style.background = 'url(../static/white.jpg)';
-            document.body.style.backgroundPosition = '0px -400px';
-        } 
-        else if(background === "background3"){
-            document.body.style.background = 'url(../static/green.jpg)';
+        function applySavedBackground() {
+            var savedBackground = localStorage.getItem('selectedBackground');
+            if (savedBackground) {
+                applyBackground(savedBackground);
+                document.getElementById('background-select').value = savedBackground;
+            }
         }
-        else {
-            document.body.style.background = '';
+
+        function applyBackground(background) {
+            if (background === 'background1') {
+                document.body.style.background = 'url(../static/background-black.jpg)';
+            } else if (background === 'background2') {
+                document.body.style.background = 'url(../static/white.jpg)';
+                document.body.style.backgroundPosition = '0px -400px';
+            } else if (background === 'background3') {
+                document.body.style.background = 'url(../static/green.jpg)';
+            } else {
+                document.body.style.background = '';
+            }
         }
-    }
 
-    function handleChange() {
-        var postId = document.querySelector('.box').getAttribute('data-post-id');
-        var title = document.querySelector('.post-title').innerText.trim();
-        var content = document.querySelector('.post-content').textContent.trim();
-        console.log(content);
-        console.log(title);
-        if (title === '' || content === '') {
-            alert('Title && content can not be empty');
-            refresh();
-            return;
+        function handleChange() {
+            var postId = document.querySelector('.box').getAttribute('data-post-id');
+            var title = document.querySelector('.post-title').innerText.trim();
+            var content = document.querySelector('.post-content').textContent.trim();
+            if (title === '' || content === '') {
+                alert('Title and content cannot be empty');
+                return;
+            }
+            socketio.emit('change_content', { id: postId, title: title, content: content });
+            location.reload();
         }
-        socketio.emit('change_content', {id: postId, title:title, content:content});
-        refresh();
-        goBack();
-    }
 
-    function handleDelete() {
-        var postID = document.querySelector('.box').getAttribute('data-post-id');
-        socketio.emit('deletePost', {id:postID});
-        refresh();
-        goBack();
-    }
+        function handleDelete() {
+            var postId = document.querySelector('.box').getAttribute('data-post-id');
+            socketio.emit('deletePost', { id: postId });
+            location.reload();
+        }
 
+        function sendComment() {
+            var postId = document.querySelector('.box').getAttribute('data-post-id');
+            var commentContent = document.getElementById('comment-input').value.trim();
+            if (commentContent === '') {
+                alert('Comment cannot be empty');
+                return;
+            }
+            socketio.emit('send_comment', { post_id: postId, comment: commentContent });
+            document.getElementById('comment-input').value = '';
+        }
 
-    function refresh(){
-        location.reload();
-    }
-    function goBack(){
-        window.location.href = "/Knowledge-repository";
-    }
+        function deleteComment(commentId) {
+            socketio.emit('delete_comment', { comment_id: commentId });
+        }
 
+        function goBack() {
+            window.location.href = "/Knowledge-repository";
+        }
 
-</script>
+        socketio.on('new_comment', function(data) {
+            var commentsContainer = document.querySelector('.comments-container');
+            var newComment = document.createElement('div');
+            newComment.classList.add('comment');
+            newComment.setAttribute('data-comment-id', data.comment_id);
+            newComment.innerHTML = `<p><strong>${data.user}:</strong> ${data.comment}</p>`;
+            if (data.user_role !== 'STUDENT') {
+                newComment.innerHTML += `<button onclick="deleteComment('${data.comment_id}')">Delete</button>`;
+            }
+            commentsContainer.appendChild(newComment);
+        });
+
+        socketio.on('comment_deleted', function(data) {
+            var commentElement = document.querySelector(`.comment[data-comment-id="${data.comment_id}"]`);
+            if (commentElement) {
+                commentElement.remove();
+            }
+        });
+
+    </script>
+</body>
+</html>
