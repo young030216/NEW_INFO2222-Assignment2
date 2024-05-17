@@ -110,12 +110,14 @@ def repo():
         if(make_post != False):
             return redirect(url_for("make_post"))
     return render_template("repo-home.html", current_user_name=current_user_name, role =current_user.role.value, posts=posts)
+
 @app.route("/Post/<int:post_id>", methods=['GET', 'POST'])
 def post(post_id):
     current_user_name = request.cookies.get('username')
     current_user = User.query.filter_by(username=current_user_name).first()
     post = Post.query.filter_by(id=post_id).first()
     return render_template("post.html", current_user=current_user, role=current_user.role.value,post=post)
+
 @app.route("/Make-Post")
 def make_post():
     current_user_name = request.cookies.get('username')
@@ -123,6 +125,7 @@ def make_post():
         return redirect(url_for("home"))
     current_user = User.query.filter_by(username=current_user_name).first()
     return render_template("make-post.html", current_user_name=current_user_name, role =current_user.role.value)
+
 @socketio.on('change_content')
 def change_content(data):
     title=data.get('title')
