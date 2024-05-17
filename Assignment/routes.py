@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response, jsonify
 from Assignment import app, db, socketio
-from Assignment.models import User, Message, FriendRequest, Room, UserRole, Post
+from Assignment.models import User, Message, FriendRequest, Room, UserRole, Post, Comment
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
 import random
@@ -191,7 +191,6 @@ def login():
     return render_template('login.html', title='login')
 
 
-
 # Socket listening for sending friend request event
 @socketio.on('send_friend_request')
 def send_friend_request(data):
@@ -343,3 +342,25 @@ def deletePost(data):
     id = data.get("id")
     Post.query.filter_by(id=id).delete()
     db.session.commit()
+
+
+@socketio.on("send_comment")
+def send_comment(data):
+    post_id = data.get("post_id")
+    comment_text = data.get("comment")
+    current_user_name = request.cookies.get('username')
+    current_user = User.query.filter_by(username=current_user_name).first()
+    if current_user:
+        new_comment = Comment(content=comment_text, user_id=current_user.id, post_id=post_id)
+        db.session.add(new_comment)
+        db.session.commit()
+        emit("new_comment", {"post_id": post_id, "comment": comment_text, "user": current_user.username}, broadcast=True)
+
+@socketio.on("delete_comment")
+def delete_comment(data):
+    comment_id = data.get("comment_id")
+    comment = Comment.query.filter_by(id=comment_id).first()
+    if comment:
+        db.session.delete(comment)
+        db.session.commit()
+        emit("comment_deleted", {"comment_id": comment_id}, broadcast=True)
