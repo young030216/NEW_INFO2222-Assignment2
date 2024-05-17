@@ -330,26 +330,42 @@
 }
 
 .post-item {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    background-color: #ffffff;
+    border: 1px solid #000000;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
     overflow-y: auto;
-    font-family: FreeMono, monospace
+    font-family: FreeMono, monospace;
+    color:rgb(0, 0, 0);
+}
+.post-item-btn {
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  overflow-y: auto;
+  font-family: FreeMono, monospace;
+  color: rgb(0, 0, 0);
+  width: 100%;
+  display: block;
+  text-align: left;
+  box-sizing: border-box;
 }
 
-.post-item:hover {
-    background-color: #f0f0f0;
+.post-item-btn:hover {
+  background-color: #f0f0f0;
 }
+
 .post-button-container {
   display: flex;
   flex-direction: column;
-  height: auto; /* 或根据需要设置高度 */
+  height: auto;
 }
 
 .new-post-button {
-  display: block; /* 设置为块级元素 */
+  display: block;
   background: transparent;
   border: none;
   padding: 0;
@@ -476,4 +492,35 @@ textarea {
 }
 .TEXT{
   color: #ffffff;
+}
+
+
+.box-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.box {
+  width: auto;
+  max-width: 1000px;
+  padding: 20px;
+  border: 2px solid #000;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+}
+
+.user-info {
+  margin-bottom: 10px;
+}
+
+.post-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.post-content {
+  font-size: 16px;
 }

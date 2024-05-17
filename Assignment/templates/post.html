@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<div class="background-select-container">
+    <select id="background-select">
+        <option value="default">Pink</option>
+        <option value="background1">Black</option>
+        <option value="background2">White</option>
+        <option value="background3">Green</option>
+    </select>
+</div>
+<div class="box-container">
+    <div class="box" data-post-id="{{ post.id }}">
+        <div class="user-info">
+            <h1>{{ post.poster.username }}
+                {% if role %}
+                    <span class="role">{{ post.poster.role.value }}</span>
+                {% endif %}
+                :
+            </h1>
+        </div>
+        <div class="post-title" contenteditable="true">
+            <h1>{{ post.title }}</h1>
+        </div>
+        <div class="post-content" contenteditable="true">
+            <p>{{ post.content }}</p>
+        </div>
+        <div class="buttons">
+            {%if current_user.username == post.poster.username %}
+            <button onclick="handleDelete()">Delete</button>
+            <button onclick="handleChange()">Modify</button>
+            {%endif%}
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var socketio = io()
+    window.addEventListener('DOMContentLoaded', applySavedBackground);
+
+    document.getElementById('background-select').addEventListener('change', changeBackground);
+
+    function changeBackground() {
+        var selectedBackground = document.getElementById('background-select').value;
+        
+        localStorage.setItem('selectedBackground', selectedBackground);
+
+        applyBackground(selectedBackground);
+    }
+
+    function applySavedBackground() {
+        var savedBackground = localStorage.getItem('selectedBackground');
+        
+        if (savedBackground) {
+            applyBackground(savedBackground);
+            document.getElementById('background-select').value = savedBackground;
+        }
+    }
+
+    function applyBackground(background) {
+        if (background === 'background1') {
+            document.body.style.background = 'url(../static/background-black.jpg)';
+        } else if (background === 'background2') {
+            document.body.style.background = 'url(../static/white.jpg)';
+            document.body.style.backgroundPosition = '0px -400px';
+        } 
+        else if(background === "background3"){
+            document.body.style.background = 'url(../static/green.jpg)';
+        }
+        else {
+            document.body.style.background = '';
+        }
+    }
+
+    function handleChange() {
+        var postId = document.querySelector('.box').getAttribute('data-post-id');
+        var title = document.querySelector('.post-title').innerText.trim();
+    var content = document.querySelector('.post-content').textContent.trim();
+        console.log(content);
+        console.log(title);
+        if (title === '' || content === '') {
+            alert('Title && content can not be empty');
+            refresh();
+            return;
+        }
+        socketio.emit('change_content', {id: postId, title:title, content:content});
+        refresh();
+    }
+
+    function handleDelete() {
+        var postID = document.querySelector('.box').getAttribute('data-post-id');
+        socketio.emit('deletePost', {id:postID});
+        goBack();
+    }
+
+
+    function refresh(){
+        location.reload();
+    }
+    function goBack(){
+        window.location.href = "/Knowledge-repository";
+    }
+
+
+</script>

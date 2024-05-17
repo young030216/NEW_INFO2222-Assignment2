@@ -104,10 +104,18 @@ def repo():
     current_user = User.query.filter_by(username=current_user_name).first()
     if request.method == "POST":
         make_post = request.form.get("make_post", False)
+        get_post = request.form.get("get_post")
+        if get_post is not None:
+            return redirect(url_for("post", post_id=get_post))
         if(make_post != False):
             return redirect(url_for("make_post"))
     return render_template("repo-home.html", current_user_name=current_user_name, role =current_user.role.value, posts=posts)
-
+@app.route("/Post/<int:post_id>", methods=['GET', 'POST'])
+def post(post_id):
+    current_user_name = request.cookies.get('username')
+    current_user = User.query.filter_by(username=current_user_name).first()
+    post = Post.query.filter_by(id=post_id).first()
+    return render_template("post.html", current_user=current_user, role=current_user.role.value,post=post)
 @app.route("/Make-Post")
 def make_post():
     current_user_name = request.cookies.get('username')
@@ -115,6 +123,14 @@ def make_post():
         return redirect(url_for("home"))
     current_user = User.query.filter_by(username=current_user_name).first()
     return render_template("make-post.html", current_user_name=current_user_name, role =current_user.role.value)
+@socketio.on('change_content')
+def change_content(data):
+    title=data.get('title')
+    content=data.get('content')
+    id=data.get('id')
+    Post.query.filter_by(id=id).update({'title': title, 'content': content})
+    db.session.commit()
+
 #register
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -318,3 +334,9 @@ def makePost(data):
     db.session.add(new_post)
     db.session.commit()
     emit("newPost")
+
+@socketio.on("deletePost")
+def deletePost(data):
+    id = data.get("id")
+    Post.query.filter_by(id=id).delete()
+    db.session.commit()
