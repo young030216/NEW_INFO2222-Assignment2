@@ -32,9 +32,12 @@
             <p>{{ post.content }}</p>
         </div>
         <div class="buttons">
-            {%if current_user.username == post.poster.username %}
-            <button onclick="handleDelete()">Delete</button>
+            {%if current_user.username == post.poster.username  or current_user.role.value != 'STUDENT' %}
+                {%if current_user.role.value != 'STUDENT' %}
+                <button onclick="handleDelete()">Delete</button>
+                {%endif%}
             <button onclick="handleChange()">Modify</button>
+            <button onclick="goBack()">Back</button>
             {%endif%}
         </div>
     </div>
@@ -81,7 +84,7 @@
     function handleChange() {
         var postId = document.querySelector('.box').getAttribute('data-post-id');
         var title = document.querySelector('.post-title').innerText.trim();
-    var content = document.querySelector('.post-content').textContent.trim();
+        var content = document.querySelector('.post-content').textContent.trim();
         console.log(content);
         console.log(title);
         if (title === '' || content === '') {
@@ -91,11 +94,13 @@
         }
         socketio.emit('change_content', {id: postId, title:title, content:content});
         refresh();
+        goBack();
     }
 
     function handleDelete() {
         var postID = document.querySelector('.box').getAttribute('data-post-id');
         socketio.emit('deletePost', {id:postID});
+        refresh();
         goBack();
     }
 
