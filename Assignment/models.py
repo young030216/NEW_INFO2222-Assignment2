@@ -23,6 +23,7 @@ class User(db.Model, UserMixin):
     messages = db.relationship('Message', lazy=True)
     role = db.Column(db.Enum(UserRole))
     online = db.Column(db.Boolean, default=False)
+    banned = db.Column(db.Boolean, default=False)
     def __repr__(self):
         return f"User('{self.username}','{self.password}','{self.salt}')"
 
@@ -73,17 +74,11 @@ class Post(db.Model):
     poster_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     poster = db.relationship('User', foreign_keys=[poster_id])
     content = db.Column(db.Text, nullable=False)
-    
+    comment = db.relationship('Comment', backref='Post', lazy=True)
 ###Comment table
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    user_name = db.Column(db.String, db.ForeignKey('user.username'), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
-
-    user = db.relationship('User', foreign_keys=[user_id])
-    post = db.relationship('Post', foreign_keys=[post_id])
-
-    def __repr__(self):
-        return f"Comment('{self.content}', '{self.user.username}', '{self.post.title}', '{self.timestamp}')"
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)

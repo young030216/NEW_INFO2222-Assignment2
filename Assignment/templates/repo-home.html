@@ -21,6 +21,9 @@
                <span class="role">{{ role }}</span>
             {% endif %}
         </h1>
+        {% if error %}
+        <h1>You have been banned</h1>
+        {% endif %}
         <ul class="post-list">
             {% for post in posts %}
                 <form method="post">
@@ -85,6 +88,14 @@
         else {
             document.body.style.background = '';
         }
+    }
+
+    socketio.on('reload', function(){
+        flash();
+    })
+
+    function flash(){
+        location.reload();
     }
 
 </script>

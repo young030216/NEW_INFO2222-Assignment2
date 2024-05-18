@@ -54,8 +54,9 @@
         socketio.emit("makePost", {content: content.value, title: title.value});
     }
     socketio.on('newPost', function(){
+        alert("You have make a article!");
+        socketio.emit('rt')
         goBack();
-        alert("You have make a post!");
     });
     const goBack = () =>{
         window.location.href = "/Knowledge-repository";
