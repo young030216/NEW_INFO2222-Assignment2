@@ -7,8 +7,8 @@
             <h3 class="profile_text">You are: {{ role }}</h3>
         </div>
 {% endif %}
-<!-- <meta charset="UTF-8">
-<meta http-equiv="refresh" content="1"> -->
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="3">
 <select id="background-select">
     <option value="default">Pink</option>
     <option value="background1">Black</option>
@@ -20,6 +20,19 @@
         <button type="submit" name="repo">Knowledge repository</button>
     </form>
 </div>
+{% if role != 'STUDENT' %}
+<div class="container">
+    <form method="post">
+        <div class="friend">
+        <input type="text" placeholder="Username" name="ban" value="{{username}}" />
+        <button type="submit" name="ban_btn">Ban</button>
+        </div>
+        {% if ban_error %}
+        <div class="alert alert-danger">{{ ban_error }}</div>
+        {% endif %}
+    </form>
+</div>
+{% endif %}
 <div class="container">
     <form method="post" class="chat-form">
         <h1 class="title">Chat with user</h1>
@@ -82,6 +95,7 @@
         const current_user_name = "{{ current_user_name }}";
         if (friendUsername == "") return;
         socketio.emit('send_friend_request', {friendUsername: friendUsername, sender_name: current_user_name});
+        socketio.emit('rt')
     }
     
     socketio.on('friend_request_error', function(data) {
@@ -98,6 +112,7 @@
         const id = document.getElementById('request_id').value;
         const state = document.getElementById('accept').value;
         socketio.emit('accept_request', {request_id: id, state: state});
+        socketio.emit('rt')
     }
 
     socketio.on('accept', function() {
@@ -112,6 +127,7 @@
     const rejectRequest = () =>{
         const id = document.getElementById('request_id').value;
         socketio.emit('reject_request', {request_id: id});
+        socketio.emit('rt')
     }   
     
     socketio.on('reject', function() {
@@ -127,10 +143,10 @@
         const fid = document.getElementById('friend_id').value;
         const id = document.getElementById('self_id').value;
         socketio.emit("remove", {fid: fid, id:id});
+        socketio.emit('rt')
     }
 
     socketio.on('remove_msg', function(){
-        goBack();
         alert("You have remove the user");
     });
 
@@ -177,6 +193,10 @@
             document.body.style.background = '';
         }
     }
+
+    socketio.on('reload', function(){
+            goBack();
+    })
 
 </script>
 

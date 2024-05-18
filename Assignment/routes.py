@@ -32,6 +32,7 @@ def home():
 #homepage after login
 @app.route("/chathome", methods=["POST", "GET"])
 def chathome():
+    session["room"] = None
     current_user_name = request.cookies.get('username')
     if(current_user_name is None):
         return redirect(url_for("home"))
@@ -45,12 +46,23 @@ def chathome():
         friend_name = request.form.get("clickfriend", False)
         create = request.form.get("create", False)
         repo = request.form.get("repo", False)
+        ban_name = request.form.get("ban")
+        ban = request.form.get("ban_btn", False)
+        if(ban != False):
+            ban_user = User.query.filter_by(username=ban_name).first()
+            if(ban_user):
+                User.query.filter_by(username=ban_name).update({'banned': True})
+                db.session.commit()
+                return render_template('chathome.html', ban_error=f'Ban {ban_name}!', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
+            else:
+                return render_template('chathome.html', ban_error=f'User dose not exist!', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
         if(repo != False):
             return redirect(url_for("repo"))
         if friend_name != False:
+            if(current_user.banned == True):
+                return render_template('chathome.html', chat_error='You have been banned', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
             exist_room = Room.query.filter_by(creater=current_user_name, receiver=friend_name).first()
             exist_friend_room = Room.query.filter_by(receiver=current_user_name, creater=friend_name).first()
-            
             if exist_friend_room or exist_room:
                 
                 if exist_friend_room:
@@ -76,6 +88,8 @@ def chathome():
         if join != False and not room_code:
             return render_template('chathome.html', chat_error='Please enter a roomcode', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
         if(create != False):
+            if(current_user.banned == True):
+                return render_template('chathome.html', chat_error='You have been banned', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
             room = Room(code=generate_unique_code(4))
             db.session.add(room)
             db.session.commit()
@@ -87,6 +101,8 @@ def chathome():
         if not exist_room:
             return render_template('chathome.html', chat_error='Room does not exist.', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
         if exist_room:
+                if(current_user.banned == True):
+                    return render_template('chathome.html', chat_error='You have been banned', current_user_name=current_user_name, friend_requests=pending_requests, friends=friend_requests, role = current_user.role.value)
                 session["room"] = exist_room.code
                 session["name"] = current_user_name
                 # friend_pk = Key.query.filter_by(username=user).first()
@@ -97,6 +113,7 @@ def chathome():
 
 @app.route("/Knowledge-repository", methods=['GET', 'POST'])
 def repo():
+    session["room"] = None
     posts = Post.query.order_by(Post.id.desc()).all()
     current_user_name = request.cookies.get('username')
     if(current_user_name is None):
@@ -108,18 +125,23 @@ def repo():
         if get_post is not None:
             return redirect(url_for("post", post_id=get_post))
         if(make_post != False):
+            if(current_user.banned == True):
+                return render_template("repo-home.html", current_user_name=current_user_name, role =current_user.role.value, posts=posts, error="You have been banned")
             return redirect(url_for("make_post"))
     return render_template("repo-home.html", current_user_name=current_user_name, role =current_user.role.value, posts=posts)
 
 @app.route("/Post/<int:post_id>", methods=['GET', 'POST'])
 def post(post_id):
+    session["room"] = None
     current_user_name = request.cookies.get('username')
     current_user = User.query.filter_by(username=current_user_name).first()
     post = Post.query.filter_by(id=post_id).first()
-    return render_template("post.html", current_user=current_user, role=current_user.role.value,post=post)
+    banned = current_user.banned
+    return render_template("post.html", current_user=current_user, role=current_user.role.value,post=post, banned = banned)
 
 @app.route("/Make-Post")
 def make_post():
+    session["room"] = None
     current_user_name = request.cookies.get('username')
     if(current_user_name is None):
         return redirect(url_for("home"))
@@ -276,7 +298,7 @@ def room():
 
 # socket listening join event
 @socketio.on('connect')
-def connect(auth):
+def connect():
     current_user_name = request.cookies.get('username')
     User.query.filter_by(username=current_user_name).update({'online': True})
     db.session.commit()
@@ -350,9 +372,11 @@ def send_comment(data):
     comment_text = data.get("comment")
     current_user_name = request.cookies.get('username')
     current_user = User.query.filter_by(username=current_user_name).first()
+    post = Post.query.filter_by(id=post_id).first() 
     if current_user:
-        new_comment = Comment(content=comment_text, user_id=current_user.id, post_id=post_id)
-        db.session.add(new_comment)
+        post.comment.append(Comment(content=comment_text, user_name=current_user_name, post_id=post_id))
+        # new_comment = Comment(content=comment_text, user_id=current_user.id, post_id=post_id)
+        # db.session.add(new_comment)
         db.session.commit()
         emit("new_comment", {"post_id": post_id, "comment": comment_text, "user": current_user.username}, broadcast=True)
 
@@ -364,3 +388,7 @@ def delete_comment(data):
         db.session.delete(comment)
         db.session.commit()
         emit("comment_deleted", {"comment_id": comment_id}, broadcast=True)
+
+@socketio.on("rt")
+def reload():
+    emit("reload", broadcast=True)
