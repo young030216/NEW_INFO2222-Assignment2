@@ -4,7 +4,8 @@ from Assignment.models import User, Message, FriendRequest, Room, UserRole, Post
 from flask_socketio import join_room, leave_room, send, emit
 from string import ascii_uppercase
 import random
-from threading import Lock
+import time
+
 
 
 def generate_unique_code(Length):
@@ -315,7 +316,9 @@ def connect():
         join_room(room_code)
         # room.messages.append(Message(message=f"{name} has entered the room", user_name=current_user.username, room_id=room.id))
         # db.session.commit()
-        emit("message", {"name": name, "message": "has entered the room"}, to=room_code)
+        current_time = time.localtime()
+        formatted_time = time.strftime("%Y-%m-%d %H:%M", current_time)
+        emit("message", {"name": name, "message": "has entered the room", "time": formatted_time}, to=room_code)
 
 @socketio.on("disconnect")
 def disconnect():
@@ -331,7 +334,9 @@ def disconnect():
         #         room.messages.append(Message(message=f"{name} has left the room", user_name=current_user.username, room_id=room.id))
         #         db.session.commit()
         leave_room(room_code)
-        emit("message", {"name": name, "message": "has left the room"}, to=room_code)
+        current_time = time.localtime()
+        formatted_time = time.strftime("%Y-%m-%d %H:%M", current_time)
+        emit("message", {"name": name, "message": "has left the room", "time": formatted_time}, to=room_code)
 
 @socketio.on("message")
 def message(data):
@@ -340,11 +345,14 @@ def message(data):
         room = Room.query.filter_by(code=room_code).first()
         if room:
             name = request.cookies.get('username')
+            current_time = time.localtime()
+            formatted_time = time.strftime("%Y-%m-%d %H:%M", current_time)
             content = {
                 "name": name,
-                "message": data["data"]
+                "message": data["data"],
+                "time": formatted_time
             }
-            room.messages.append(Message(message=data["data"], user_name=name, room_id=room.id))
+            room.messages.append(Message(message=data["data"], user_name=name, room_id=room.id, time=formatted_time))
             db.session.commit()
             send(content, to=room_code)
 
@@ -354,7 +362,9 @@ def makePost(data):
     content = data.get("content")
     current_user_name = request.cookies.get('username')
     current_user = User.query.filter_by(username=current_user_name).first()
-    new_post = Post(title=title, content=content, poster = current_user, poster_id=current_user.id)
+    current_time = time.localtime()
+    formatted_time = time.strftime("%Y-%m-%d %H:%M", current_time)
+    new_post = Post(title=title, content=content, poster = current_user, poster_id=current_user.id, time=formatted_time)
     db.session.add(new_post)
     db.session.commit()
     emit("newPost")
@@ -374,7 +384,9 @@ def send_comment(data):
     current_user = User.query.filter_by(username=current_user_name).first()
     post = Post.query.filter_by(id=post_id).first() 
     if current_user:
-        post.comment.append(Comment(content=comment_text, user_name=current_user_name, post_id=post_id))
+        current_time = time.localtime()
+        formatted_time = time.strftime("%Y-%m-%d %H:%M", current_time)
+        post.comment.append(Comment(content=comment_text, user_name=current_user_name, post_id=post_id, time=formatted_time))
         # new_comment = Comment(content=comment_text, user_id=current_user.id, post_id=post_id)
         # db.session.add(new_comment)
         db.session.commit()

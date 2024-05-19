@@ -26,11 +26,11 @@
 <script type="text/javascript">
     var socketio = io()
     const message = document.getElementById("messages")
-    const createMessage = (name, msg) => {
+    const createMessage = (name, msg, time) => {
         const content = `
         <div class="text">
             <span>
-                <strong>${name}</strong>: ${msg}
+                <strong>${name}</strong>: ${msg} on ${time}
         </div>
         `;
         messages.innerHTML += content;
@@ -38,7 +38,7 @@
 
 
     socketio.on("message", (data) =>{
-        createMessage(data.name, data.message);
+        createMessage(data.name, data.message, data.time);
     });
 
     const sendMessage = () => {
@@ -94,7 +94,7 @@
 
 {% for msg in message %}
     <script type="text/javascript">
-        createMessage("{{msg.user_name}}", "{{msg.message}}");
+        createMessage("{{msg.user_name}}", "{{msg.message}}", "{{msg.time}}");
     </script>
 {% endfor %}
 {% endblock %}

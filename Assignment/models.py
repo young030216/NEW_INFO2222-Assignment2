@@ -43,7 +43,7 @@ class Message(db.Model):
     message = db.Column(db.Text, nullable=False)
     user_name = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
-
+    time = db.Column(db.Text, nullable=False)
     def __repr__(self):
         return f"Mesage('{self.message}')"  
     
@@ -75,6 +75,7 @@ class Post(db.Model):
     poster = db.relationship('User', foreign_keys=[poster_id])
     content = db.Column(db.Text, nullable=False)
     comment = db.relationship('Comment', backref='Post', lazy=True)
+    time = db.Column(db.Text, nullable=False)
 ###Comment table
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -82,3 +83,4 @@ class Comment(db.Model):
     user_name = db.Column(db.String, db.ForeignKey('user.username'), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    time = db.Column(db.Text, nullable=False)

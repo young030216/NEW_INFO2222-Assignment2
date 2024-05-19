@@ -28,7 +28,7 @@
             {% for post in posts %}
                 <form method="post">
                     <button class="post-item-btn" type="submit" name="get_post" value="{{ post.id }}">
-                        #{{ post.id }}: {{ post.title }} post by: {{ post.poster.username }}
+                        #{{ post.id }}: {{ post.title }} post by: {{ post.poster.username }} -{{post.time}}
                         {% if post.poster.role %}
                             <span class="role-box">{{ post.poster.role.value }}</span>
                         {% endif %}
