@@ -10,7 +10,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 10vh;
         }
     </style>
 </head>
@@ -20,10 +20,6 @@
         <img src="../static/book.jpg" alt="Book">
         <img src="../static/chat.png" alt="Chat">
         <img src="../static/friend.png" alt="Chat">
-    </div>
-    <div class="button">
-        <a href="login"><button>Login</button></a>
-        <a href="register"><button>Register</button></a>
     </div>
     <div class="message-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -35,6 +31,10 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+    </div>
+    <div class="button">
+        <a href="login"><button>Login</button></a>
+        <a href="register"><button>Register</button></a>
     </div>
 </body>
 </html>
