@@ -30,7 +30,7 @@
                         {% if role %}
                             <span class="role">{{ post.poster.role.value }}</span>
                         {% endif %}
-                        :
+                        on {{ post.time }}:
                     </h1>
                 </div>
                 {% if current_user.username == post.poster.username or current_user.role.value != 'STUDENT' %}
@@ -64,7 +64,7 @@
                 <div class="comments-container">
                     {% for comment in post.comment %}
                     <div class="comment" data-comment-id="{{ comment.id }}">
-                        <p><strong>{{ comment.user_name }} <span class="role">{{ post.poster.role.value }}</span>:</strong> {{ comment.content }}</p>
+                        <p><strong>{{ comment.user_name }} <span class="role">{{ post.poster.role.value }}</span> on {{ comment.time}} :</strong> {{ comment.content }}</p>
                         {% if current_user.role.value != 'STUDENT' or current_user.username == comment.user_name %}
                             <button onclick="deleteComment('{{ comment.id }}')">Delete</button>
                         {% endif %}
