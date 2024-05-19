@@ -52,7 +52,7 @@
     </div>
 
     <form method="post" class="friend-list-form">
-        <h1 class="title">Fiend List</h1>
+        <h1 class="title">Friend List</h1>
         <div class="friend-list">
             {% for friend in friends %}
                 <button type="submit" name="clickfriend" value="{{ friend.receiver.username }}"><div class="TEXT">{{ friend.receiver.username }}</div></button>
@@ -70,7 +70,7 @@
     </form>
 
     <div class="friend-requests">
-        <h1 class="title">Fiend Request</h1>
+        <h1 class="title">Friend Request</h1>
         <ul>
             {% for request in friend_requests %}
                 <li class="friend-request">{{ request.sender.username }} sent you a friend request
